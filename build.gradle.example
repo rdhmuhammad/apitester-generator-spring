@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.17'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.asliri'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '11'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/Asli-RI/spring-commons")
+        credentials {
+            username = project.findProperty("user") ?: System.getenv("USERNAME")
+            password = project.findProperty("token") ?: System.getenv("TOKEN")
+        }
+    }
+
+}
+
+bootJar {
+    launchScript()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'com.github.loki4j:loki-logback-appender:1.4.0'
+    implementation 'com.asliri.core:spring-sdk:0.0.0.7'
+    compileOnly 'org.projectlombok:lombok'
+    implementation 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+
+
+    implementation 'io.micrometer:micrometer-core'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // interceptor
+    implementation 'commons-fileupload:commons-fileupload:1.4'
+
+    implementation 'org.json:json:20230227'
+    implementation 'org.springframework.mobile:spring-mobile-device:1.0.1.RELEASE'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

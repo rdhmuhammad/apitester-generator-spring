@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.17'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.apitester'
+version = '0.0.1'
+
+java {
+    sourceCompatibility = '17'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    enabled = true
+    archiveClassifier = 'plain'
+}
+
+bootJar {
+    archiveClassifier = 'boot'
+    launchScript()
+}
+
+dependencies {
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.github.loki4j:loki-logback-appender:1.4.0'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.5'
+    implementation 'org.json:json:20230227'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
+
+
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
