@@ -13,4 +13,11 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Import(ApiTesterAutoConfiguration.class)
 public @interface EnableApiTester {
+
+    Variable[] globalVariables() default {};
+
+    @interface Variable {
+        String key();
+        String value();
+    }
 }

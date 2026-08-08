@@ -8,10 +8,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -93,7 +96,9 @@ public class EndpointProcessor {
 
         Map<String, String> pathVariables = new LinkedHashMap<>();
         List<PostmanMapItem> queryParams = new ArrayList<>();
+        List<PostmanMapItem> formdataParams = new ArrayList<>();
         String requestBodyJson = null;
+        boolean isMultipart = false;
 
         for (Parameter param : method.getParameters()) {
             if (shouldIgnore(param, ignoreParams)) continue;
@@ -110,33 +115,77 @@ public class EndpointProcessor {
                 requestBodyJson = generateRequestBodyJson(param.getType());
                 continue;
             }
-            // TODO: add logic to get multipartform data request
+
+            ModelAttribute modelAttr = param.getAnnotation(ModelAttribute.class);
+            if (modelAttr != null) {
+                isMultipart = true;
+                Map<String, Class<?>> dtoParams = dtoAnalyzer.resolveQueryParams(param.getType());
+                for (Map.Entry<String, Class<?>> entry : dtoParams.entrySet()) {
+                    formdataParams.add(PostmanMapItem.builder()
+                            .key(entry.getKey())
+                            .value(String.valueOf(dtoAnalyzer.generateExampleValue(entry.getValue())))
+                            .type("text")
+                            .build());
+                }
+                continue;
+            }
+
+            RequestPart requestPart = param.getAnnotation(RequestPart.class);
+            if (requestPart != null || MultipartFile.class.isAssignableFrom(param.getType())) {
+                isMultipart = true;
+                String name = (requestPart != null && !requestPart.value().isEmpty())
+                        ? requestPart.value() : param.getName();
+                formdataParams.add(PostmanMapItem.builder()
+                        .key(name)
+                        .type("file")
+                        .src("")
+                        .build());
+                continue;
+            }
 
             RequestParam requestParam = param.getAnnotation(RequestParam.class);
             if (requestParam != null) {
                 String name = requestParam.value().isEmpty() ? param.getName() : requestParam.value();
-                queryParams.add(PostmanMapItem.builder()
+                PostmanMapItem item = PostmanMapItem.builder()
                         .key(name)
                         .value(String.valueOf(dtoAnalyzer.generateExampleValue(param.getType())))
-                        .build());
+                        .type("text")
+                        .build();
+                if (isMultipart) {
+                    formdataParams.add(item);
+                } else {
+                    queryParams.add(item);
+                }
                 continue;
             }
 
             if (!isSimpleType(param.getType()) && !isStandardLibraryType(param.getType())) {
                 Map<String, Class<?>> dtoParams = dtoAnalyzer.resolveQueryParams(param.getType());
                 for (Map.Entry<String, Class<?>> entry : dtoParams.entrySet()) {
-                    queryParams.add(PostmanMapItem.builder()
+                    PostmanMapItem item = PostmanMapItem.builder()
                             .key(entry.getKey())
                             .value(String.valueOf(dtoAnalyzer.generateExampleValue(entry.getValue())))
-                            .build());
+                            .type("text")
+                            .build();
+                    if (isMultipart) {
+                        formdataParams.add(item);
+                    } else {
+                        queryParams.add(item);
+                    }
                 }
                 continue;
             }
 
-            queryParams.add(PostmanMapItem.builder()
+            PostmanMapItem item = PostmanMapItem.builder()
                     .key(param.getName())
                     .value(String.valueOf(dtoAnalyzer.generateExampleValue(param.getType())))
-                    .build());
+                    .type("text")
+                    .build();
+            if (isMultipart) {
+                formdataParams.add(item);
+            } else {
+                queryParams.add(item);
+            }
         }
 
         String fullPath = buildFullPath(classLevelPath, methodPath);
@@ -159,6 +208,11 @@ public class EndpointProcessor {
                     .raw(requestBodyJson)
                     .build());
             request.getHeader().add(new PostmanMapItem("Content-Type", "application/json", ""));
+        } else if (isMultipart) {
+            request.setBody(PostmanRequest.PostmanBody.builder()
+                    .mode("formdata")
+                    .formdata(formdataParams)
+                    .build());
         }
 
         return EndpointInfo.builder()

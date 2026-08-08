@@ -2,6 +2,7 @@ package com.apitester.generator.processor;
 
 import com.apitester.generator.example.TestAdminController;
 import com.apitester.generator.example.TestMemberController;
+import com.apitester.generator.example.TestUploadController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class EndpointProcessorIntegrationTest {
                 .findFirst().orElse(null);
 
         assertNotNull(postEndpoint);
-        assertEquals("Online", postEndpoint.getName());
+        assertEquals("Create Online", postEndpoint.getName());
         assertNotNull(postEndpoint.getRequest().getBody());
         assertEquals("raw", postEndpoint.getRequest().getBody().getMode());
         assertNotNull(postEndpoint.getRequest().getBody().getRaw());
@@ -117,5 +118,113 @@ class EndpointProcessorIntegrationTest {
         assertTrue(onlineEndpoint.getRequest().getUrl().getPath().contains("api"));
         assertTrue(onlineEndpoint.getRequest().getUrl().getPath().contains("v1"));
         assertTrue(onlineEndpoint.getRequest().getUrl().getPath().contains("member"));
+    }
+
+    @Test
+    @DisplayName("Should process multipart form-data endpoint")
+    void processMultipartFormData() {
+        List<EndpointProcessor.EndpointInfo> endpoints =
+                processor.processController(TestUploadController.class, Set.of());
+
+        assertEquals(4, endpoints.size());
+
+        EndpointProcessor.EndpointInfo uploadEndpoint = endpoints.stream()
+                .filter(e -> e.getRequest().getUrl().getRaw().contains("file"))
+                .findFirst().orElse(null);
+
+        assertNotNull(uploadEndpoint);
+        assertEquals("POST", uploadEndpoint.getRequest().getMethod());
+        assertNotNull(uploadEndpoint.getRequest().getBody());
+        assertEquals("formdata", uploadEndpoint.getRequest().getBody().getMode());
+        assertNotNull(uploadEndpoint.getRequest().getBody().getFormdata());
+        assertEquals(2, uploadEndpoint.getRequest().getBody().getFormdata().size());
+
+        assertTrue(uploadEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("file") && "file".equals(f.getType())));
+        assertTrue(uploadEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("name") && "text".equals(f.getType())));
+    }
+
+    @Test
+    @DisplayName("Should process multipart form-data with multiple files and params")
+    void processMultipartMultipleFiles() {
+        List<EndpointProcessor.EndpointInfo> endpoints =
+                processor.processController(TestUploadController.class, Set.of());
+
+        EndpointProcessor.EndpointInfo multiEndpoint = endpoints.stream()
+                .filter(e -> e.getRequest().getUrl().getRaw().contains("multi"))
+                .findFirst().orElse(null);
+
+        assertNotNull(multiEndpoint);
+        assertEquals("formdata", multiEndpoint.getRequest().getBody().getMode());
+        assertNotNull(multiEndpoint.getRequest().getBody().getFormdata());
+        assertEquals(3, multiEndpoint.getRequest().getBody().getFormdata().size());
+
+        assertTrue(multiEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("files") && "file".equals(f.getType())));
+        assertTrue(multiEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("folder") && "text".equals(f.getType())));
+        assertTrue(multiEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("overwrite") && "text".equals(f.getType())));
+
+        assertNull(multiEndpoint.getRequest().getUrl().getQuery());
+    }
+
+    @Test
+    @DisplayName("Should process @ModelAttribute as formdata")
+    void processModelAttributeFormData() {
+        List<EndpointProcessor.EndpointInfo> endpoints =
+                processor.processController(TestUploadController.class, Set.of());
+
+        EndpointProcessor.EndpointInfo profileEndpoint = endpoints.stream()
+                .filter(e -> e.getRequest().getUrl().getRaw().contains("profile"))
+                .findFirst().orElse(null);
+
+        assertNotNull(profileEndpoint);
+        assertEquals("POST", profileEndpoint.getRequest().getMethod());
+        assertNotNull(profileEndpoint.getRequest().getBody());
+        assertEquals("formdata", profileEndpoint.getRequest().getBody().getMode());
+        assertNotNull(profileEndpoint.getRequest().getBody().getFormdata());
+        assertEquals(3, profileEndpoint.getRequest().getBody().getFormdata().size());
+
+        assertTrue(profileEndpoint.getRequest().getBody().getFormdata().stream()
+                .allMatch(f -> "text".equals(f.getType())));
+
+        assertTrue(profileEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("username")));
+        assertTrue(profileEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("email")));
+        assertTrue(profileEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("age")));
+
+        assertNull(profileEndpoint.getRequest().getUrl().getQuery());
+    }
+
+    @Test
+    @DisplayName("Should process @ModelAttribute mixed with @RequestPart")
+    void processModelAttributeWithMultipart() {
+        List<EndpointProcessor.EndpointInfo> endpoints =
+                processor.processController(TestUploadController.class, Set.of());
+
+        EndpointProcessor.EndpointInfo docEndpoint = endpoints.stream()
+                .filter(e -> e.getRequest().getUrl().getRaw().contains("document"))
+                .findFirst().orElse(null);
+
+        assertNotNull(docEndpoint);
+        assertEquals("formdata", docEndpoint.getRequest().getBody().getMode());
+        assertNotNull(docEndpoint.getRequest().getBody().getFormdata());
+        assertEquals(4, docEndpoint.getRequest().getBody().getFormdata().size());
+
+        assertTrue(docEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("attachment") && "file".equals(f.getType())));
+
+        assertTrue(docEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("username") && "text".equals(f.getType())));
+        assertTrue(docEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("email") && "text".equals(f.getType())));
+        assertTrue(docEndpoint.getRequest().getBody().getFormdata().stream()
+                .anyMatch(f -> f.getKey().equals("age") && "text".equals(f.getType())));
+
+        assertNull(docEndpoint.getRequest().getUrl().getQuery());
     }
 }

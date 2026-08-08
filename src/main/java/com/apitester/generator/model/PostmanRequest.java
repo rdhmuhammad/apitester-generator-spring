@@ -40,5 +40,8 @@ public class PostmanRequest {
 
         private String mode;
         private String raw;
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private List<PostmanMapItem> formdata;
     }
 }

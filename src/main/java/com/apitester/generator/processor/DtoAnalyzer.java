@@ -28,6 +28,7 @@ public class DtoAnalyzer {
         for (Field field : fields) {
             if (Modifier.isStatic(field.getModifiers())) continue;
             if (Modifier.isTransient(field.getModifiers())) continue;
+            if (field.isSynthetic()) continue;
 
             String paramName = resolveFieldParamName(field, namingStrategyClass, dtoClass);
             result.put(paramName, field.getType());

@@ -79,6 +79,9 @@ public class PostmanCollectionGenerator {
                             .value(properties.getCollection().getBaseUrl())
                     .build());
         }
+        if (properties.getGlobalVariables() != null) {
+            globalVariables.addAll(properties.getGlobalVariables());
+        }
 
         return PostmanCollection.builder()
                 .info(info)

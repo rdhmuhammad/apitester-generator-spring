@@ -1,8 +1,12 @@
 package com.apitester.generator.config;
 
+import com.apitester.generator.model.PostmanMapItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +21,7 @@ public class ApiTesterProperties {
     private int timeout = 5000;
     private boolean generateEnvFile = true;
     private Collection collection = new Collection();
+    private List<PostmanMapItem> globalVariables = new ArrayList<>();
 
     @Getter
     @Setter

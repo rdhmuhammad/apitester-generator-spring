@@ -13,9 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,7 +42,7 @@ class PostmanCollectionGeneratorTest {
         assertNotNull(collection);
         assertEquals("Test Collection", collection.getInfo().getName());
         assertNotNull(collection.getItem());
-        assertTrue(collection.getItem().size() > 0);
+        assertFalse(collection.getItem().isEmpty());
     }
 
     @Test
@@ -52,9 +50,7 @@ class PostmanCollectionGeneratorTest {
     void generateWithParentFolders() {
         ControllerScanner.ControllerInfo controllerInfo = createControllerInfo(
                 TestAdminController.class, "Admin",
-                new String[]{"Admin", "Dashboard"}, Arrays.asList(
-                        new PostmanMapItem()
-                ), new Class<?>[]{});
+                new String[]{"Admin", "Dashboard"}, new Class<?>[]{});
 
         PostmanCollection collection = generator.generate(List.of(controllerInfo), endpointProcessor);
 
@@ -82,7 +78,7 @@ class PostmanCollectionGeneratorTest {
 
         PostmanCollection collection = generator.generate(List.of(controllerInfo), endpointProcessor);
 
-        assertTrue(collection.getItem().size() > 0);
+        assertFalse(collection.getItem().isEmpty());
         assertEquals("Member", collection.getItem().get(0).getName());
     }
 
@@ -122,8 +118,42 @@ class PostmanCollectionGeneratorTest {
         assertEquals(2, collection.getItem().get(0).getItem().get(0).getItem().size());
     }
 
+    @Test
+    @DisplayName("Should include global variables from properties in collection")
+    void includeGlobalVariables() {
+        ApiTesterProperties properties = new ApiTesterProperties();
+        properties.getCollection().setName("Test Collection");
+        properties.getCollection().setBaseUrl("http://test.com");
+        properties.getGlobalVariables().add(PostmanMapItem.builder()
+                .key("token")
+                .value("abc123")
+                .build());
+        properties.getGlobalVariables().add(PostmanMapItem.builder()
+                .key("apiKey")
+                .value("xyz789")
+                .build());
+
+        generator = new PostmanCollectionGenerator(properties);
+
+        ControllerScanner.ControllerInfo controllerInfo = createControllerInfo(
+                TestMemberController.class, "Member", new String[]{}, new Class<?>[]{});
+
+        PostmanCollection collection = generator.generate(List.of(controllerInfo), endpointProcessor);
+
+        assertNotNull(collection.getVariable());
+        assertEquals(3, collection.getVariable().size());
+
+        assertTrue(collection.getVariable().stream()
+                .anyMatch(v -> "baseUrl".equals(v.getKey()) && "http://test.com".equals(v.getValue())));
+        assertTrue(collection.getVariable().stream()
+                .anyMatch(v -> "token".equals(v.getKey()) && "abc123".equals(v.getValue())));
+        assertTrue(collection.getVariable().stream()
+                .anyMatch(v -> "apiKey".equals(v.getKey()) && "xyz789".equals(v.getValue())));
+    }
+
     private ControllerScanner.ControllerInfo createControllerInfo(
             Class<?> controllerClass, String folderName, String[] parentFolders, Class<?>[] ignoreParams) {
-        return new ControllerScanner.ControllerInfo(controllerClass, folderName, parentFolders, ignoreParams);
+        return new ControllerScanner.ControllerInfo(controllerClass, folderName, parentFolders,
+                Collections.emptyMap(), ignoreParams);
     }
 }
