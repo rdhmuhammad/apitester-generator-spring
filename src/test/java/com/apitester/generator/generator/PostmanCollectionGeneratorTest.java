@@ -5,6 +5,7 @@ import com.apitester.generator.example.TestAdminController;
 import com.apitester.generator.example.TestMemberController;
 import com.apitester.generator.model.PostmanCollection;
 import com.apitester.generator.model.PostmanItem;
+import com.apitester.generator.model.PostmanMapItem;
 import com.apitester.generator.processor.DtoAnalyzer;
 import com.apitester.generator.processor.EndpointProcessor;
 import com.apitester.generator.scanner.ControllerScanner;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,7 +52,9 @@ class PostmanCollectionGeneratorTest {
     void generateWithParentFolders() {
         ControllerScanner.ControllerInfo controllerInfo = createControllerInfo(
                 TestAdminController.class, "Admin",
-                new String[]{"Admin", "Dashboard"}, new Class<?>[]{});
+                new String[]{"Admin", "Dashboard"}, Arrays.asList(
+                        new PostmanMapItem()
+                ), new Class<?>[]{});
 
         PostmanCollection collection = generator.generate(List.of(controllerInfo), endpointProcessor);
 

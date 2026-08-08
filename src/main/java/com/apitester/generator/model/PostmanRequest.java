@@ -24,26 +24,11 @@ public class PostmanRequest {
     private String method;
 
     @Builder.Default
-    private List<PostmanHeader> header = new ArrayList<>();
+    private List<PostmanMapItem> header = new ArrayList<>();
 
     private PostmanBody body;
 
     private PostmanUrl url;
-
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class PostmanHeader {
-
-        @Builder.Default
-        private String id = "";
-
-        private String key;
-        private String value;
-    }
 
     @Getter
     @Setter

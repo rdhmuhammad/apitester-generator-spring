@@ -1,5 +1,7 @@
 package com.apitester.generator.processor;
 
+import com.apitester.generator.common.ValueUtils;
+import com.apitester.generator.model.PostmanMapItem;
 import com.apitester.generator.model.PostmanRequest;
 import com.apitester.generator.model.PostmanUrl;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -76,6 +78,7 @@ public class EndpointProcessor {
                 EndpointInfo info = buildEndpointInfo(
                         controllerClass.getSimpleName(), classLevelPath,
                         methodPath, httpMethod, method, ignoreParams);
+
                 endpoints.add(info);
             }
         }
@@ -89,7 +92,7 @@ public class EndpointProcessor {
             Method method, Set<Class<?>> ignoreParams) {
 
         Map<String, String> pathVariables = new LinkedHashMap<>();
-        List<PostmanUrl.PostmanQueryParam> queryParams = new ArrayList<>();
+        List<PostmanMapItem> queryParams = new ArrayList<>();
         String requestBodyJson = null;
 
         for (Parameter param : method.getParameters()) {
@@ -107,11 +110,12 @@ public class EndpointProcessor {
                 requestBodyJson = generateRequestBodyJson(param.getType());
                 continue;
             }
+            // TODO: add logic to get multipartform data request
 
             RequestParam requestParam = param.getAnnotation(RequestParam.class);
             if (requestParam != null) {
                 String name = requestParam.value().isEmpty() ? param.getName() : requestParam.value();
-                queryParams.add(PostmanUrl.PostmanQueryParam.builder()
+                queryParams.add(PostmanMapItem.builder()
                         .key(name)
                         .value(String.valueOf(dtoAnalyzer.generateExampleValue(param.getType())))
                         .build());
@@ -121,7 +125,7 @@ public class EndpointProcessor {
             if (!isSimpleType(param.getType()) && !isStandardLibraryType(param.getType())) {
                 Map<String, Class<?>> dtoParams = dtoAnalyzer.resolveQueryParams(param.getType());
                 for (Map.Entry<String, Class<?>> entry : dtoParams.entrySet()) {
-                    queryParams.add(PostmanUrl.PostmanQueryParam.builder()
+                    queryParams.add(PostmanMapItem.builder()
                             .key(entry.getKey())
                             .value(String.valueOf(dtoAnalyzer.generateExampleValue(entry.getValue())))
                             .build());
@@ -129,7 +133,7 @@ public class EndpointProcessor {
                 continue;
             }
 
-            queryParams.add(PostmanUrl.PostmanQueryParam.builder()
+            queryParams.add(PostmanMapItem.builder()
                     .key(param.getName())
                     .value(String.valueOf(dtoAnalyzer.generateExampleValue(param.getType())))
                     .build());
@@ -154,12 +158,11 @@ public class EndpointProcessor {
                     .mode("raw")
                     .raw(requestBodyJson)
                     .build());
+            request.getHeader().add(new PostmanMapItem("Content-Type", "application/json", ""));
         }
 
-        String endpointName = buildEndpointName(methodPath, httpMethod);
-
         return EndpointInfo.builder()
-                .name(endpointName)
+                .name(ValueUtils.CemalToWords(method.getName()))
                 .request(request)
                 .build();
     }
@@ -193,7 +196,7 @@ public class EndpointProcessor {
         return classPath + "/" + methodP;
     }
 
-    private String buildRawUrl(String fullPath, List<PostmanUrl.PostmanQueryParam> queryParams,
+    private String buildRawUrl(String fullPath, List<PostmanMapItem> queryParams,
                                 Map<String, String> pathVariables) {
         String path = fullPath;
         for (String var : pathVariables.keySet()) {

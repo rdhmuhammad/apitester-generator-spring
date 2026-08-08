@@ -5,9 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
 public class ControllerScanner {
@@ -30,8 +29,13 @@ public class ControllerScanner {
             String controllerName = deriveControllerName(controllerClass.getSimpleName());
             String[] folders = apiTester.folders();
             Class<?>[] ignoreParams = apiTester.ignoreParams();
+            Map<String, String> globalHeadersMap = new HashMap<>();
+            Optional<ApiTester.Headers[]> globalHeaders = Optional.ofNullable(apiTester.globalHeaders());
+            globalHeaders.ifPresent(headers -> Stream.of(headers).forEach(h -> globalHeadersMap.put(h.key(), h.value())));
 
-            controllers.add(new ControllerInfo(controllerClass, controllerName, folders, ignoreParams));
+            controllers.add(new ControllerInfo(
+                    controllerClass, controllerName,
+                    folders, globalHeadersMap, ignoreParams));
             log.info("Scanned controller: {} -> folder: {}, parent folders: {}",
                     controllerClass.getSimpleName(), controllerName, folders);
         }
@@ -41,7 +45,8 @@ public class ControllerScanner {
 
     private String deriveControllerName(String simpleName) {
         if (simpleName.endsWith("Controller")) {
-            return simpleName.substring(0, simpleName.length() - "Controller".length());
+            String substring = simpleName.substring(0, simpleName.length() - "Controller".length());
+            return substring.replaceAll("(?<!^)(?=[A-Z])", " ");
         }
         return simpleName;
     }
@@ -56,6 +61,7 @@ public class ControllerScanner {
         private final Class<?> controllerClass;
         private final String controllerFolderName;
         private final String[] parentFolders;
+        private final Map<String, String> globalHeaders;
         private final Class<?>[] ignoreParams;
     }
 }

@@ -29,7 +29,7 @@ public class PostmanResponse {
     private String _postman_previewlanguage = "Text";
 
     @Builder.Default
-    private List<PostmanRequest.PostmanHeader> header = new ArrayList<>();
+    private List<PostmanMapItem> header = new ArrayList<>();
 
     private String body;
 }

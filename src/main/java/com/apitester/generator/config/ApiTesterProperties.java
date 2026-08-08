@@ -10,6 +10,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ApiTesterProperties {
 
     private boolean enabled = true;
+    private String basePackage = "";
+    private String parentFolder = "";
+    private String format = "json";
+    private String includeHeaders = "";
+    private int timeout = 5000;
+    private boolean generateEnvFile = true;
     private Collection collection = new Collection();
 
     @Getter

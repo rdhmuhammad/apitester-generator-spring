@@ -1,18 +1,14 @@
 package com.apitester.generator.generator;
 
 import com.apitester.generator.config.ApiTesterProperties;
-import com.apitester.generator.model.PostmanCollection;
-import com.apitester.generator.model.PostmanItem;
-import com.apitester.generator.model.PostmanResponse;
+import com.apitester.generator.model.*;
 import com.apitester.generator.processor.EndpointProcessor;
 import com.apitester.generator.scanner.ControllerScanner;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PostmanCollectionGenerator {
 
@@ -43,6 +39,16 @@ public class PostmanCollectionGenerator {
                     endpointProcessor.processController(controller.getControllerClass(), ignoreParams);
 
             for (EndpointProcessor.EndpointInfo endpoint : endpoints) {
+                List<PostmanMapItem> globalHeaders = controller.getGlobalHeaders()
+                        .entrySet()
+                        .stream()
+                        .map(dt-> new PostmanMapItem( dt.getKey(), dt.getValue(), ""))
+                        .toList();
+
+                endpoint.getRequest().setHeader(Stream
+                                .concat(globalHeaders.stream(), endpoint.getRequest().getHeader().stream())
+                                .collect(Collectors.toList()));
+
                 PostmanItem requestItem = PostmanItem.builder()
                         .name(endpoint.getName())
                         .request(endpoint.getRequest())
@@ -65,9 +71,19 @@ public class PostmanCollectionGenerator {
             }
         }
 
+        List<PostmanMapItem> globalVariables = new ArrayList<>();
+        if (Objects.nonNull(properties.getCollection().getBaseUrl())){
+            globalVariables.add(PostmanMapItem.builder()
+                            .key("baseUrl")
+                            .category("BASE_URL")
+                            .value(properties.getCollection().getBaseUrl())
+                    .build());
+        }
+
         return PostmanCollection.builder()
                 .info(info)
                 .item(items)
+                .variable(globalVariables)
                 .build();
     }
 

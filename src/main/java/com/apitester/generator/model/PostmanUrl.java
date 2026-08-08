@@ -27,20 +27,5 @@ public class PostmanUrl {
     private List<String> path = new ArrayList<>();
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<PostmanQueryParam> query;
-
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class PostmanQueryParam {
-
-        @Builder.Default
-        private String id = "";
-
-        private String key;
-        private String value;
-    }
+    private List<PostmanMapItem> query;
 }
