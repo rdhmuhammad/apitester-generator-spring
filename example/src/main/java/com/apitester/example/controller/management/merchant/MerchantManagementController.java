@@ -1,6 +1,5 @@
 package com.apitester.example.controller.management.merchant;
 
-import com.apitester.example.annotation.ApiController;
 import com.apitester.example.dto.ApiResponse;
 import com.apitester.example.dto.MerchantRequest;
 import com.apitester.example.entity.Merchant;
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/management/merchant")
-@ApiTester
+@ApiTester(folders = {"Management"})
 public class MerchantManagementController {
 
     private final Map<Long, Merchant> merchants = new ConcurrentHashMap<>();

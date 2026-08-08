@@ -1,6 +1,5 @@
 package com.apitester.example.controller.management.product;
 
-import com.apitester.example.annotation.ApiController;
 import com.apitester.example.dto.ApiResponse;
 import com.apitester.example.dto.ProductRequest;
 import com.apitester.example.entity.Product;
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/management/product")
-@ApiTester
+@ApiTester(folders = {"Management"})
 public class ProductManagementController {
 
     private final Map<Long, Product> products = new ConcurrentHashMap<>();
