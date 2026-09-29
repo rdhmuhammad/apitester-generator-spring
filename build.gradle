@@ -8,7 +8,7 @@ group = 'com.apitester'
 version = '0.0.1'
 
 java {
-    sourceCompatibility = '17'
+    sourceCompatibility = '11 '
 }
 
 configurations {

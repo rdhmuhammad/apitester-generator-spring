@@ -20,8 +20,61 @@ public class ApiTesterProperties {
     private String includeHeaders = "";
     private int timeout = 5000;
     private boolean generateEnvFile = true;
+    private String path = "/apitester";
+    private String uiPath = "/apitester";
+    private String username;
+    private String password;
+    private Auth auth = new Auth();
     private Collection collection = new Collection();
     private List<PostmanMapItem> globalVariables = new ArrayList<>();
+
+    public String getResolvedUsername() {
+        if (auth != null && auth.getUsername() != null && !auth.getUsername().isEmpty()) {
+            return auth.getUsername();
+        }
+        if (username != null && !username.isEmpty()) {
+            return username;
+        }
+        return "admin";
+    }
+
+    public String getResolvedPassword() {
+        if (auth != null && auth.getPassword() != null && !auth.getPassword().isEmpty()) {
+            return auth.getPassword();
+        }
+        if (password != null && !password.isEmpty()) {
+            return password;
+        }
+        return "secret";
+    }
+
+    public String getResolvedUiPath() {
+        if (uiPath != null && !uiPath.isEmpty() && !"/apitester".equals(uiPath)) {
+            return normalizePath(uiPath);
+        }
+        if (path != null && !path.isEmpty()) {
+            return normalizePath(path);
+        }
+        return "/apitester";
+    }
+
+    private String normalizePath(String p) {
+        if (p == null || p.trim().isEmpty()) return "/apitester";
+        String trimmed = p.trim();
+        if (!trimmed.startsWith("/")) trimmed = "/" + trimmed;
+        while (trimmed.endsWith("/") && trimmed.length() > 1) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
+    }
+
+    @Getter
+    @Setter
+    public static class Auth {
+        private String username = "admin";
+        private String password = "secret";
+        private String jwtSecret = "default-secret-change-me";
+    }
 
     @Getter
     @Setter

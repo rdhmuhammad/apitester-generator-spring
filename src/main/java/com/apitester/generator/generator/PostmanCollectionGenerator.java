@@ -43,7 +43,7 @@ public class PostmanCollectionGenerator {
                         .entrySet()
                         .stream()
                         .map(dt-> new PostmanMapItem( dt.getKey(), dt.getValue(), ""))
-                        .toList();
+                        .collect(Collectors.toList());
 
                 endpoint.getRequest().setHeader(Stream
                                 .concat(globalHeaders.stream(), endpoint.getRequest().getHeader().stream())

@@ -129,7 +129,7 @@ class EndpointProcessorIntegrationTest {
         assertEquals(4, endpoints.size());
 
         EndpointProcessor.EndpointInfo uploadEndpoint = endpoints.stream()
-                .filter(e -> e.getRequest().getUrl().getRaw().contains("file"))
+                .filter(e -> e.getRequest().getUrl().getRaw().endsWith("/file"))
                 .findFirst().orElse(null);
 
         assertNotNull(uploadEndpoint);

@@ -1,51 +1,89 @@
-# AGENTS.md
+# LLM Wiki
 
-## Project Overview
+A personal knowledge base maintained by Claude Code.  
+Based on Andrej Karpathy's LLM Wiki pattern.
 
-**apitester-generator-spring** — Spring Boot API tester/generator application.
 
-- **Java:** 17
-- **Spring Boot:** 2.7.17
-- **Build:** Gradle 8.5 (Groovy DSL)
-- **Group:** `com.github`
-- **Base package:** `com.apitester.generator-spring`
+## Purpose
 
-## Commands
+This wiki is a structured, interlinked knowledge base for working with this codebase.
+- Agent AI maintains the wiki
+- Human curates sources (folder raw), ask question and guides the analysis
 
-| Action | Command                 |
-|---|-------------------------|
-| Build | `.\gradlew.bat bootJar`  |
-| Test | `.\gradlew.bat test`    |
-| Run | `.\gradlew.bat bootRun` |
-| Clean | `.\gradlew.bat clean`   |
+## Folder Structure
 
-No linting, checkstyle, or static analysis commands are configured.
+| Folder                          | Note                                               |
+| ------------------------------- | -------------------------------------------------- |
+| document/raw                    | source documents (immutable -- never modify these) |
+| document/wiki                   | markdown pages maintained by agentic ai            |
+| document/wiki/patterns          | implementation and architectural patterns         |
+| document/wiki/patterns/<module> | related pattern pages grouped by module           |
+| document/wiki/decisions         | recorded technical decisions                      |
+| document/wiki/concepts          | reusable domain and codebase concepts             |
+| document/wiki/index.md          | grouped table of contents for the entire wiki     |
+| document/wiki/log.md            | append-only record of all operations              |
+## Ingest: Raw -> Wiki
 
-## Key Dependencies
+When a source added to `document/raw` and asks you to ingest it:
+1. Read the full source document
+2. Discuss key takeaways with the user before writing anything
+3. Create a summary page in the appropriate category folder, using the source's topic and module. For implementation examples, use `document/wiki/patterns/<module>/`.
+4. Create or update concept pages in `document/wiki/concepts/` for major reusable ideas or entities.
+5. Create decision pages in `document/wiki/decisions/` for explicit technical choices and rationale.
+6. Add path-qualified wiki-links (for example, `[[patterns/controller/example-of-module-controller]]`) to connect related pages.
+7. Update `document/wiki/index.md` with grouped sections and one-line descriptions for every page.
+8. Append an entry to `document/wiki/log.md` with the date, source name, and what changed.
+A single source may touch 10-15 wiki pages. That is normal.
 
-| Dependency | Purpose |
-|---|---|
-| `spring-boot-starter` | Core Spring Boot |
-| `spring-boot-starter-test` | JUnit 5 + Mockito + Spring Test |
-| `lombok` (compileOnly + annotationProcessor) | Boilerplate reduction |
-| `modelmapper:2.3.8` | DTO/entity object mapping |
-| `jackson-databind:2.13.5` | JSON serialization |
-| `org.json:json:20230227` | JSON processing |
-| `loki-logback-appender:1.4.0` | Loki log aggregation |
+## Page format
 
-## Code Conventions
+Every wiki page should follow this structure
 
-- **Lombok is required** — use `@Getter`, `@Setter`, `@Builder`, `@AllArgsConstructor`, `@NoArgsConstructor`, `@Slf4j` instead of manual boilerplate.
-- **ModelMapper** for DTO-to-entity conversions — inject `ModelMapper` bean, don't write manual mappers.
-- **Jackson** for JSON — prefer `jackson-databind` over `org.json` for new code.
-- **No comments** in code unless absolutely necessary.
-- `application.properties` is gitignored — must be created manually from example/env vars.
-- The main class should be annotated with `@SpringBootApplication` and placed in the root package.
+```markdown
+    
+# Page Title
+    
+**Summary**: One to two sentences describing this page.
+**Sources**: List of raw source files this page draws from.
+**Last updated**: Date of most recent update.
+    
+---
+    
+Main content goes here. Use clear headings and short paragraphs.
+Link to related concepts using [[wiki-links]] throughout the text.
 
-## Project Status
+## Related pages
 
-Source code has NOT been written yet. The `src/main/java/com/apitester/generator-spring/` directory is empty. This project needs:
-1. A `@SpringBootApplication` main class
-2. `src/main/resources/application.properties` (gitignored, create from scratch)
-3. `src/test/resources/application-test.properties` (gitignored, create from scratch)
-4. Controller, service, and repository layers as needed
+- [[related-concept-1]]
+- [[related-concept-2]]    
+```
+
+## Question Answering
+
+When user ask a question:
+1. Read `document/wiki/index.md` first to find relevant pages
+2. Read those pages and synthesized an answer
+3. If answer is not in wiki, note to chat about that while resolving the question
+4. If answer is valuable, offer to save it as a new wiki page
+
+Good answers should be filed back into the wiki so they compound over time.
+
+## Lint
+
+When the user asks you to lint or audit the wiki:
+- Check for contradictions between pages
+- Find orphan pages (no inbound links from other pages)
+- Identify concepts mentioned in pages that lack their own page
+- Flag claims that may be outdated based on newer sources
+- Check that all pages follow the page format above
+- Check that every wiki page is in the correct category/module folder and that index links match its path
+- Report findings as a numbered list with suggested fixes
+
+## Rules
+- Never modify anything in the `document/raw` folder
+- Always update `document/wiki/index.md` and `document/wiki/log.md` after changes
+- Keep page names lowercase with hyphens (e.g. `machine-learning.md`)
+- Keep category and module folder names lowercase with hyphens
+- Keep `index.md` and `log.md` at the wiki root; category indexes may exist inside category folders
+- Write in clear, plain language
+- When uncertain about how to categorize something, ask the user
