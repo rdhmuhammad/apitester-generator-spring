@@ -2,7 +2,7 @@
 
 **Summary**: Grouped table of contents and page registry for the LLM Wiki.
 **Sources**: `document/raw/concept/Preserve user changes.md`, `document/raw/concept/Three Arrow Merging Slide.md`, `document/raw/decision/endpoint_spec.md`
-**Last updated**: 2026-09-29.
+**Last updated**: 2026-10-02.
 
 ---
 
@@ -31,6 +31,7 @@ Recorded architectural and technical decisions establishing project standards.
 - [[decisions/endpoint-spec-and-architecture]]: Architectural decision establishing Clean Architecture layering, route composition under `/api/v1`, and multi-language implementation guidelines.
 - [[decisions/field-level-ownership-rules]]: Technical decision defining the conflict resolution boundary between code-generated schema definitions and user-authored testing data.
 - [[decisions/deterministic-endpoint-keys]]: Technical decision adopting composite HTTP Method and URL Path keys to reliably identify and match collection requests across merge operations.
+- [[decisions/deterministic-node-uuids]]: Technical decision adopting deterministic UUID generation from ControllerFileName and handler method name to eliminate UUID drift during three-way merging.
 
 ## Concepts
 

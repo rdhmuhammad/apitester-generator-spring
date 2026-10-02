@@ -23,6 +23,7 @@ public class PostmanCollection {
     @Builder.Default
     private List<PostmanItem> item = new ArrayList<>();
 
+    @Builder.Default
     private List<PostmanMapItem> variable = new ArrayList<>();
 
     @Getter

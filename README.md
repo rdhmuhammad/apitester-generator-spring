@@ -175,7 +175,11 @@ apitester.collection.name=My API
 apitester.collection.description=Auto-generated from Spring controllers
 apitester.collection.base-url=https://api.example.com
 apitester.collection.output-path=docs/postman.json
+
+# Toggle SLF4J logging level for this package (e.g. trace, error, info)
+logging.level.com.apitester.generator=info
 ```
+
 
 ---
 

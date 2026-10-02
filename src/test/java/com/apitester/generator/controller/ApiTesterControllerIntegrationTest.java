@@ -2,6 +2,7 @@ package com.apitester.generator.controller;
 
 import com.apitester.generator.annotation.EnableApiTester;
 import com.apitester.generator.config.ApiTesterProperties;
+import com.apitester.generator.dto.DocsContent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ApiTesterControllerIntegrationTest {
 
-    @SpringBootApplication
+    @SpringBootApplication(scanBasePackages = "com.apitester.generator.config")
     @EnableApiTester
     static class TestApplication {
     }
@@ -85,9 +86,9 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/collection/list should return collection metadata")
+    @DisplayName("GET /apitester/api/v1/collection/list should return collection metadata")
     void testListCollections() throws Exception {
-        mockMvc.perform(get("/api/v1/collection/list"))
+        mockMvc.perform(get("/apitester/api/v1/collection/list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.messageTitle", is("Success")))
@@ -99,9 +100,9 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/collection/read/{id} should strip BOM, categorize BASE_URL, and inject UUIDs")
+    @DisplayName("GET /apitester/api/v1/collection/read/{id} should strip BOM, categorize BASE_URL, and inject UUIDs")
     void testReadCollection() throws Exception {
-        mockMvc.perform(get("/api/v1/collection/read/{id}", "test-postman-uuid-123"))
+        mockMvc.perform(get("/apitester/api/v1/collection/read/{id}", "test-postman-uuid-123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.changed", is(false)))
@@ -113,9 +114,9 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/collection/read/{id} with invalid id should return 400")
+    @DisplayName("GET /apitester/api/v1/collection/read/{id} with invalid id should return 400")
     void testReadCollectionNotFound() throws Exception {
-        mockMvc.perform(get("/api/v1/collection/read/{id}", "unknown-id"))
+        mockMvc.perform(get("/apitester/api/v1/collection/read/{id}", "unknown-id"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.messageTitle", is("Invalid data.")))
@@ -123,9 +124,9 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("PUT /api/v1/collection/select/{id} should mark collection selected")
+    @DisplayName("PUT /apitester/api/v1/collection/select/{id} should mark collection selected")
     void testSelectCollection() throws Exception {
-        mockMvc.perform(put("/api/v1/collection/select/{id}", "test-postman-uuid-123"))
+        mockMvc.perform(put("/apitester/api/v1/collection/select/{id}", "test-postman-uuid-123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.message", is("Collection selected")))
@@ -134,25 +135,25 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/collection/get-active and /read-selected should return active collection")
+    @DisplayName("GET /apitester/api/v1/collection/get-active and /read-selected should return active collection")
     void testGetActiveAndReadSelected() throws Exception {
-        mockMvc.perform(get("/api/v1/collection/get-active"))
+        mockMvc.perform(get("/apitester/api/v1/collection/get-active"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.id", is("test-postman-uuid-123")));
 
-        mockMvc.perform(get("/api/v1/collection/read-selected"))
+        mockMvc.perform(get("/apitester/api/v1/collection/read-selected"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content.info.name", is("Test App Collection")));
     }
 
     @Test
-    @DisplayName("PUT /api/v1/collection/write/{id} should update collection file on disk")
+    @DisplayName("PUT /apitester/api/v1/collection/write/{id} should update collection file on disk")
     void testWriteCollection() throws Exception {
         String updatedJson = "{\"info\":{\"name\":\"Updated Collection\"}}";
 
-        mockMvc.perform(put("/api/v1/collection/write/{id}", "test-postman-uuid-123")
+        mockMvc.perform(put("/apitester/api/v1/collection/write/{id}", "test-postman-uuid-123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedJson))
                 .andExpect(status().isOk())
@@ -164,9 +165,99 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET & PUT /api/v1/collection/{id}/environments should manage environment JSON")
+    @DisplayName("PUT /apitester/api/v1/collection/write/{id} with structured DocsContent DTO should persist and be readable as DocsContent")
+    void testWriteAndReadStructuredDocsContent() throws Exception {
+        DocsContent content = DocsContent.builder()
+                .info(DocsContent.CollectionInfo.builder()
+                        .name("Structured Test Collection")
+                        .description("Test description")
+                        .build())
+                .item(java.util.List.of(
+                        DocsContent.CollectionItem.builder()
+                                .name("Get Item")
+                                .request(DocsContent.Request.builder()
+                                        .method("GET")
+                                        .url(DocsContent.RequestUrl.builder()
+                                                .raw("{{baseUrl}}/api/v1/items")
+                                                .host(java.util.List.of("{{baseUrl}}"))
+                                                .path(java.util.List.of("api", "v1", "items"))
+                                                .query(java.util.List.of(
+                                                        new DocsContent.Property("filter", "active")
+                                                ))
+                                                .build())
+                                        .header(java.util.List.of(
+                                                new DocsContent.Header("Accept", "application/json")
+                                        ))
+                                        .build())
+                                .build()
+                ))
+                .auth(DocsContent.CollectionAuth.builder()
+                        .type("bearer")
+                        .bearer(java.util.List.of(
+                                new DocsContent.Property("token", "secret-token")
+                        ))
+                        .build())
+                .variable(java.util.List.of(
+                        DocsContent.CollectionVar.builder()
+                                .key("baseUrl")
+                                .value("https://api.example.com")
+                                .build()
+                ))
+                .build();
+
+        String dtoJson = objectMapper.writeValueAsString(content);
+
+        mockMvc.perform(put("/apitester/api/v1/collection/write/{id}", "test-postman-uuid-123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dtoJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("Collection written successfully")));
+
+        mockMvc.perform(get("/apitester/api/v1/collection/read/{id}", "test-postman-uuid-123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content.info.name", is("Structured Test Collection")))
+                .andExpect(jsonPath("$.data.content.info._postman_id", is("test-postman-uuid-123")))
+                .andExpect(jsonPath("$.data.content.item[0].name", is("Get Item")))
+                .andExpect(jsonPath("$.data.content.item[0].id", not(emptyOrNullString())))
+                .andExpect(jsonPath("$.data.content.item[0].request.method", is("GET")))
+                .andExpect(jsonPath("$.data.content.item[0].request.header[0].key", is("Accept")))
+                .andExpect(jsonPath("$.data.content.item[0].request.header[0].id", not(emptyOrNullString())))
+                .andExpect(jsonPath("$.data.content.item[0].request.url.query[0].key", is("filter")))
+                .andExpect(jsonPath("$.data.content.item[0].request.url.query[0].id", not(emptyOrNullString())))
+                .andExpect(jsonPath("$.data.content.auth.type", is("bearer")))
+                .andExpect(jsonPath("$.data.content.variable[0].key", is("baseUrl")))
+                .andExpect(jsonPath("$.data.content.variable[0].category", is("BASE_URL")))
+                .andExpect(jsonPath("$.data.content.variable[0].id", not(emptyOrNullString())));
+    }
+
+    @Test
+    @DisplayName("PUT /apitester/api/v1/collection/write-selected should accept DocsContent DTO")
+    void testWriteSelectedCollectionDto() throws Exception {
+        DocsContent content = DocsContent.builder()
+                .info(DocsContent.CollectionInfo.builder()
+                        .name("Active Selected Collection")
+                        .build())
+                .build();
+
+        mockMvc.perform(put("/apitester/api/v1/collection/write-selected")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(content)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("Collection written successfully")));
+
+        mockMvc.perform(get("/apitester/api/v1/collection/read-selected"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content.info.name", is("Active Selected Collection")));
+    }
+
+    @Test
+    @DisplayName("GET & PUT /apitester/api/v1/collection/{id}/environments should manage environment JSON")
     void testEnvironments() throws Exception {
-        mockMvc.perform(get("/api/v1/collection/{id}/environments", "test-postman-uuid-123"))
+        mockMvc.perform(get("/apitester/api/v1/collection/{id}/environments", "test-postman-uuid-123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.environments", hasSize(0)));
@@ -183,14 +274,14 @@ class ApiTesterControllerIntegrationTest {
                 "  ]\n" +
                 "}";
 
-        mockMvc.perform(put("/api/v1/collection/{id}/environments", "test-postman-uuid-123")
+        mockMvc.perform(put("/apitester/api/v1/collection/{id}/environments", "test-postman-uuid-123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(envJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.message", is("Environments written successfully")));
 
-        mockMvc.perform(get("/api/v1/collection/{id}/environments", "test-postman-uuid-123"))
+        mockMvc.perform(get("/apitester/api/v1/collection/{id}/environments", "test-postman-uuid-123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.environments", hasSize(1)))
@@ -200,11 +291,11 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/auth/login and GET /api/v1/auth/me should succeed and set cookie")
+    @DisplayName("POST /apitester/api/v1/auth/login and GET /apitester/api/v1/auth/me should succeed and set cookie")
     void testAuthEndpoints() throws Exception {
         String loginJson = "{\"username\":\"admin\",\"password\":\"secret\",\"rememberMe\":true}";
 
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/apitester/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
@@ -216,11 +307,23 @@ class ApiTesterControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.username", is("admin")))
                 .andExpect(jsonPath("$.data.token", not(emptyOrNullString())));
 
-        mockMvc.perform(get("/api/v1/auth/me"))
+        mockMvc.perform(get("/apitester/api/v1/auth/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.username", is("admin")))
                 .andExpect(jsonPath("$.data.authenticated", is(true)));
+    }
+
+    @Test
+    @DisplayName("Endpoints should NOT be mapped under unprefixed /api/v1 to avoid colliding with target service")
+    void testNoCollisionWithTargetService() throws Exception {
+        mockMvc.perform(get("/api/v1/collection/list"))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"admin\",\"password\":\"secret\"}"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -256,20 +359,9 @@ class ApiTesterControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /apitester/api/v1/collection/list should also work with /apitester prefix")
-    void testNamespacedRoute() throws Exception {
-        mockMvc.perform(get("/apitester/api/v1/collection/list"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data", hasSize(1)));
-
-        // Test /collection/read endpoint called by frontend
+    @DisplayName("GET /apitester/api/v1/collection/read should work with active collection alias")
+    void testCollectionReadAlias() throws Exception {
         mockMvc.perform(get("/apitester/api/v1/collection/read"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.data.content", notNullValue()));
-
-        mockMvc.perform(get("/api/v1/collection/read"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content", notNullValue()));

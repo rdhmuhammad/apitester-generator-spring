@@ -4,6 +4,7 @@ import com.apitester.generator.config.ApiTesterProperties;
 import com.apitester.generator.dto.AuthDto;
 import com.apitester.generator.dto.CollectionContentResponse;
 import com.apitester.generator.dto.CollectionMetadata;
+import com.apitester.generator.dto.DocsContent;
 import com.apitester.generator.dto.EnvironmentDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,10 +52,15 @@ public class ApiTesterService {
         File file = getCollectionFile();
         if (file.exists()) {
             try {
-                JsonNode root = objectMapper.readTree(file);
-                JsonNode postmanId = root.path("info").path("_postman_id");
-                if (!postmanId.isMissingNode() && !postmanId.asText().isEmpty()) {
-                    cachedCollectionId = postmanId.asText();
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                String contentStr = new String(bytes, StandardCharsets.UTF_8);
+                if (contentStr.startsWith("\uFEFF")) {
+                    contentStr = contentStr.substring(1);
+                }
+                DocsContent docsContent = objectMapper.readValue(contentStr, DocsContent.class);
+                if (docsContent.getInfo() != null && docsContent.getInfo().getPostmanId() != null
+                        && !docsContent.getInfo().getPostmanId().isEmpty()) {
+                    cachedCollectionId = docsContent.getInfo().getPostmanId();
                     if (selectedCollectionId == null) {
                         selectedCollectionId = cachedCollectionId;
                     }
@@ -79,10 +85,15 @@ public class ApiTesterService {
 
         if (file.exists()) {
             try {
-                JsonNode root = objectMapper.readTree(file);
-                JsonNode nameNode = root.path("info").path("name");
-                if (!nameNode.isMissingNode() && !nameNode.asText().isEmpty()) {
-                    name = nameNode.asText();
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                String contentStr = new String(bytes, StandardCharsets.UTF_8);
+                if (contentStr.startsWith("\uFEFF")) {
+                    contentStr = contentStr.substring(1);
+                }
+                DocsContent docsContent = objectMapper.readValue(contentStr, DocsContent.class);
+                if (docsContent.getInfo() != null && docsContent.getInfo().getName() != null
+                        && !docsContent.getInfo().getName().isEmpty()) {
+                    name = docsContent.getInfo().getName();
                 }
             } catch (Exception ignored) {
             }
@@ -134,23 +145,23 @@ public class ApiTesterService {
         if (!file.exists()) {
             throw new IllegalArgumentException("Collection not found");
         }
+        log.info("Reading collection at {}", file.getAbsolutePath());
 
         byte[] bytes = Files.readAllBytes(file.toPath());
         String contentStr = new String(bytes, StandardCharsets.UTF_8);
         if (contentStr.startsWith("\uFEFF")) {
             contentStr = contentStr.substring(1);
         }
+        log.trace("Read content: {}", contentStr);
 
-        JsonNode rootNode = objectMapper.readTree(contentStr);
-        if (rootNode instanceof ObjectNode) {
-            normalizeCollection((ObjectNode) rootNode);
-        }
+        DocsContent docsContent = objectMapper.readValue(contentStr, DocsContent.class);
+        normalizeCollection(docsContent);
 
         String updatedAt = ISO_FORMATTER.format(Instant.ofEpochMilli(file.lastModified()));
         return CollectionContentResponse.builder()
                 .changed(false)
                 .updatedAt(updatedAt)
-                .content(rootNode)
+                .content(docsContent)
                 .build();
     }
 
@@ -162,19 +173,28 @@ public class ApiTesterService {
         return readCollection(active.getId());
     }
 
-    public void writeSelectedCollection(String rawJson) throws IOException {
+    public void writeSelectedCollection(DocsContent content) throws IOException {
         CollectionMetadata active = getActiveCollection();
         String targetId = (active != null) ? active.getId() : getOrCreateCollectionId();
-        writeCollection(targetId, rawJson);
+        writeCollection(targetId, content);
     }
 
-    public void writeCollection(String id, String rawJson) throws IOException {
+    public void writeCollection(String id, DocsContent content) throws IOException {
         String currentId = getOrCreateCollectionId();
         if (!currentId.equals(id)) {
             throw new IllegalArgumentException("Collection not found");
         }
-        if (rawJson == null || rawJson.trim().isEmpty()) {
+        if (content == null) {
             throw new IllegalArgumentException("Collection content must not be empty");
+        }
+
+        if (content.getInfo() != null) {
+            if (content.getInfo().getPostmanId() == null || content.getInfo().getPostmanId().isEmpty()) {
+                content.getInfo().setPostmanId(id);
+            }
+            if (content.getInfo().getSchema() == null || content.getInfo().getSchema().isEmpty()) {
+                content.getInfo().setSchema("https://schema.getpostman.com/json/collection/v2.1.0/collection.json");
+            }
         }
 
         File file = getCollectionFile();
@@ -182,80 +202,94 @@ public class ApiTesterService {
         if (parent != null && !parent.exists()) {
             parent.mkdirs();
         }
-        Files.write(file.toPath(), rawJson.getBytes(StandardCharsets.UTF_8));
+
+        printContent("Write collection with value", content);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, content);
     }
 
-    private void normalizeCollection(ObjectNode rootNode) {
-        JsonNode variableNode = rootNode.get("variable");
-        if (variableNode instanceof ArrayNode) {
-            for (JsonNode item : variableNode) {
-                if (item instanceof ObjectNode) {
-                    ObjectNode obj = (ObjectNode) item;
-                    JsonNode keyNode = obj.get("key");
-                    if (keyNode != null && BASE_URL_REGEX.matcher(keyNode.asText()).find()) {
-                        JsonNode catNode = obj.get("category");
-                        if (catNode == null || catNode.asText().isEmpty()) {
-                            obj.put("category", "BASE_URL");
+    public void printContent(String message, Object content){
+        try {
+            String contentStr = objectMapper.writeValueAsString(content);
+            log.trace("{}: {}", message, contentStr);
+        } catch (Exception e) {
+            log.error("Error while reading content: {}", e.getMessage());
+        }
+    }
+
+    private void normalizeCollection(DocsContent content) {
+        if (content == null) {
+            return;
+        }
+
+        if (content.getVariable() != null) {
+            for (DocsContent.CollectionVar var : content.getVariable()) {
+                if (var.getKey() != null && BASE_URL_REGEX.matcher(var.getKey()).find()) {
+                    if (var.getCategory() == null || var.getCategory().isEmpty()) {
+                        var.setCategory("BASE_URL");
+                    }
+                }
+                if (var.getId() == null || var.getId().isEmpty()) {
+                    var.setId(UUID.randomUUID().toString());
+                }
+            }
+        }
+
+        if (content.getItem() != null) {
+            injectIds(content.getItem());
+        }
+    }
+
+    private void injectIds(List<DocsContent.CollectionItem> items) {
+        if (items == null) {
+            return;
+        }
+        for (DocsContent.CollectionItem item : items) {
+            if (item.getId() == null || item.getId().isEmpty()) {
+                item.setId(UUID.randomUUID().toString());
+            }
+
+            if (item.getRequest() != null) {
+                DocsContent.Request req = item.getRequest();
+                if (req.getHeader() != null) {
+                    for (DocsContent.Header h : req.getHeader()) {
+                        if (h.getId() == null || h.getId().isEmpty()) {
+                            h.setId(UUID.randomUUID().toString());
                         }
                     }
-                    JsonNode idNode = obj.get("id");
-                    if (idNode == null || idNode.asText().isEmpty()) {
-                        obj.put("id", UUID.randomUUID().toString());
+                }
+                if (req.getUrl() != null && req.getUrl().getQuery() != null) {
+                    for (DocsContent.Property q : req.getUrl().getQuery()) {
+                        if (q.getId() == null || q.getId().isEmpty()) {
+                            q.setId(UUID.randomUUID().toString());
+                        }
+                    }
+                }
+                if (req.getBody() != null && req.getBody().getFormdata() != null) {
+                    for (DocsContent.Property f : req.getBody().getFormdata()) {
+                        if (f.getId() == null || f.getId().isEmpty()) {
+                            f.setId(UUID.randomUUID().toString());
+                        }
+                    }
+                }
+                if (req.getAuth() != null && req.getAuth().getBearer() != null) {
+                    for (DocsContent.Property b : req.getAuth().getBearer()) {
+                        if (b.getId() == null || b.getId().isEmpty()) {
+                            b.setId(UUID.randomUUID().toString());
+                        }
                     }
                 }
             }
-        }
 
-        JsonNode itemNode = rootNode.get("item");
-        if (itemNode instanceof ArrayNode) {
-            injectIds((ArrayNode) itemNode);
-        }
-    }
-
-    private void injectIds(ArrayNode items) {
-        for (JsonNode node : items) {
-            if (node instanceof ObjectNode) {
-                ObjectNode itemObj = (ObjectNode) node;
-                JsonNode idNode = itemObj.get("id");
-                if (idNode == null || idNode.asText().isEmpty()) {
-                    itemObj.put("id", UUID.randomUUID().toString());
-                }
-
-                JsonNode reqNode = itemObj.get("request");
-                if (reqNode instanceof ObjectNode) {
-                    ObjectNode reqObj = (ObjectNode) reqNode;
-                    injectListIds(reqObj, "header");
-
-                    JsonNode urlNode = reqObj.get("url");
-                    if (urlNode instanceof ObjectNode) {
-                        injectListIds((ObjectNode) urlNode, "query");
+            if (item.getResponse() != null) {
+                for (DocsContent.CollectionResponse resp : item.getResponse()) {
+                    if (resp.getId() == null || resp.getId().isEmpty()) {
+                        resp.setId(UUID.randomUUID().toString());
                     }
-
-                    JsonNode bodyNode = reqObj.get("body");
-                    if (bodyNode instanceof ObjectNode) {
-                        injectListIds((ObjectNode) bodyNode, "formdata");
-                    }
-                }
-
-                JsonNode subItems = itemObj.get("item");
-                if (subItems instanceof ArrayNode) {
-                    injectIds((ArrayNode) subItems);
                 }
             }
-        }
-    }
 
-    private void injectListIds(ObjectNode parent, String fieldName) {
-        JsonNode listNode = parent.get(fieldName);
-        if (listNode instanceof ArrayNode) {
-            for (JsonNode elem : listNode) {
-                if (elem instanceof ObjectNode) {
-                    ObjectNode elemObj = (ObjectNode) elem;
-                    JsonNode idNode = elemObj.get("id");
-                    if (idNode == null || idNode.asText().isEmpty()) {
-                        elemObj.put("id", UUID.randomUUID().toString());
-                    }
-                }
+            if (item.getItem() != null) {
+                injectIds(item.getItem());
             }
         }
     }

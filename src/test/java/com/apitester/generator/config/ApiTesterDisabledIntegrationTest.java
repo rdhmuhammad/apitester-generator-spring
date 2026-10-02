@@ -23,9 +23,9 @@ class ApiTesterDisabledIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("When @EnableApiTester is not present, /api/v1/collection/list should return 404")
+    @DisplayName("When @EnableApiTester is not present, /apitester/api/v1/collection/list should return 404")
     void testEndpointsDisabledWithoutAnnotation() throws Exception {
-        mockMvc.perform(get("/api/v1/collection/list"))
+        mockMvc.perform(get("/apitester/api/v1/collection/list"))
                 .andExpect(status().isNotFound());
     }
 }

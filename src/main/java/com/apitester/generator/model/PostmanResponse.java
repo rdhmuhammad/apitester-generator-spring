@@ -21,6 +21,7 @@ public class PostmanResponse {
     @Builder.Default
     private String funIden = "";
 
+    private String id;
     private String name;
     private String status;
     private int code;

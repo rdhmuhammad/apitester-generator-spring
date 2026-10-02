@@ -37,6 +37,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
-
-    implementation fileTree(dir: 'libs', include: '*.jar')
+    // Composite build dependency to root project (development)
+    implementation 'com.apitester:apitester-generator-spring:0.0.1'
 }

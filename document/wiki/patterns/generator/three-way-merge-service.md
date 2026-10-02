@@ -2,112 +2,39 @@
 
 **Summary**: Implementation pattern in Spring Boot using Jackson and zjsonpatch to execute non-destructive 3-way Postman collection synchronization.
 **Sources**: `document/raw/concept/Three Arrow Merging Slide.md`, `document/raw/concept/Preserve user changes.md`
-**Last updated**: 2026-09-23.
+**Last updated**: 2026-10-02.
 
 ---
 
 ## Architectural Context
 
-The merge service implements the [[concepts/flatten-diff-merge-unflatten]] pattern to merge developer edits from the Postman UI with new controller definitions from Spring code. It avoids array index shift corruption by mapping endpoint items to composite keys ([[decisions/deterministic-endpoint-keys]]) before applying RFC 6902 patches.
+The merge service implements the [[concepts/flatten-diff-merge-unflatten]] pattern to merge developer edits from the Postman UI with new controller definitions from Spring code. It avoids array index shift corruption by mapping endpoint items to composite keys ([[decisions/deterministic-endpoint-keys]]) or `funIden` ([[decisions/deterministic-node-uuids]]) before applying RFC 6902 patches.
 
 ## Key Dependencies
 
-- `com.fasterxml.jackson.core:jackson-databind`: JSON tree manipulation via `JsonNode` and `ObjectNode`.
+- `com.fasterxml.jackson.core:jackson-databind`: JSON tree manipulation via `JsonNode`, `ArrayNode`, and `ObjectNode`.
 - `com.flipkart.zjsonpatch:zjsonpatch`: RFC 6902 JSON Diff and JSON Patch computation (`JsonDiff`, `JsonPatch`).
 
-## Reference Implementation
+## Implementation Highlights
 
-```java
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.flipkart.zjsonpatch.JsonDiff;
-import com.flipkart.zjsonpatch.JsonPatch;
-import org.springframework.stereotype.Service;
+1. **Flattening**: Traverses hierarchical `"item"` arrays into a map keyed by `funIden` (e.g. `UserController#getUser`) or normalized `METHOD:PATH`.
+2. **RFC 6902 User Diff**: Uses `JsonDiff.asJson(flatBase, flatTarget)` to capture all user changes made since the last generation.
+3. **Field-Level Ownership Filtering**:
+   - Drops structural generator-owned mutations: `/request/url/raw`, `/request/method`, `/id`, `/funIden`.
+   - Retains user-owned customizations: `/request/body`, `/request/header`, `/request/url/query`, `/event` (scripts), `/request/auth`.
+4. **Deep Request Body Merging**:
+   - Parses JSON payloads in both Target and Update.
+   - Preserves user custom values for existing fields while injecting newly declared fields from Spring DTOs with default placeholder values.
+5. **Template-Driven Unflattening**:
+   - Reconstructs collection folders using the freshly generated `Update` structure as the master template.
+   - Replaces request nodes with merged items.
+   - Deletes endpoints that were present in `Base` but removed in `Update` (Option A removal).
+   - Preserves standalone custom requests created directly by the user in `Target`.
+6. **Collection Variable Merging**: Preserves user overrides and newly defined collection variables while retaining base URL defaults.
 
-import java.util.Iterator;
+## Reference Service
 
-@Service
-public class PostmanMergeService {
-
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    public JsonNode executeThreeWayMerge(JsonNode base, JsonNode target, JsonNode update) {
-        // 1. Flatten items array into maps keyed by HTTP_METHOD:URL_PATH
-        JsonNode flatBase = flattenItemsToMap(base);
-        JsonNode flatTarget = flattenItemsToMap(target);
-        JsonNode flatUpdate = flattenItemsToMap(update);
-
-        // 2. Generate the RFC 6902 user patch (Base -> Target)
-        JsonNode rawUserPatch = JsonDiff.asJson(flatBase, flatTarget);
-
-        // 3. Filter patch: keep user-owned fields (body, values), discard structural mutations
-        JsonNode filteredPatch = filterUserPatch(rawUserPatch);
-
-        // 4. Apply filtered patch on top of freshly generated controllers
-        JsonNode mergedFlatNode = JsonPatch.apply(filteredPatch, flatUpdate);
-
-        // 5. Convert back into standard Postman hierarchical "item" array
-        return unflattenMapToItems(mergedFlatNode, update);
-    }
-
-    private JsonNode filterUserPatch(JsonNode patchArray) {
-        ArrayNode filtered = mapper.createArrayNode();
-        for (JsonNode op : patchArray) {
-            String path = op.path("path").asText();
-
-            // Generator owns URL paths, HTTP methods, and query parameter names
-            if (path.contains("/request/url/raw") || path.contains("/request/method")) {
-                continue;
-            }
-
-            // User owns body payloads, parameter values, auth tokens, scripts
-            if (path.contains("/request/body/raw") || 
-                path.contains("/value") || 
-                path.contains("/script/")) {
-                filtered.add(op);
-            }
-        }
-        return filtered;
-    }
-
-    private JsonNode flattenItemsToMap(JsonNode collectionRoot) {
-        ObjectNode flattened = mapper.createObjectNode();
-        ArrayNode items = (ArrayNode) collectionRoot.path("item");
-        if (items != null) {
-            flattenItemsRecursive(items, flattened);
-        }
-        return flattened;
-    }
-
-    private void flattenItemsRecursive(ArrayNode items, ObjectNode targetMap) {
-        for (JsonNode item : items) {
-            if (item.has("item")) {
-                // Folder node - recurse
-                flattenItemsRecursive((ArrayNode) item.path("item"), targetMap);
-            } else if (item.has("request")) {
-                // Request leaf node - key by METHOD:PATH
-                String method = item.path("request").path("method").asText("GET");
-                String url = item.path("request").path("url").path("raw").asText();
-                String key = method + ":" + url;
-                targetMap.set(key, item);
-            }
-        }
-    }
-
-    private JsonNode unflattenMapToItems(JsonNode mergedFlatNode, JsonNode template) {
-        ObjectNode result = template.deepCopy();
-        ArrayNode itemsArray = mapper.createArrayNode();
-        Iterator<JsonNode> elements = mergedFlatNode.elements();
-        while (elements.hasNext()) {
-            itemsArray.add(elements.next());
-        }
-        result.set("item", itemsArray);
-        return result;
-    }
-}
-```
+See [`PostmanMergeService.java`](file:///d:/personal/apitester-generator-spring/src/main/java/com/apitester/generator/service/PostmanMergeService.java) for the complete implementation.
 
 ## Related pages
 
@@ -115,3 +42,4 @@ public class PostmanMergeService {
 - [[concepts/flatten-diff-merge-unflatten]]
 - [[decisions/field-level-ownership-rules]]
 - [[decisions/deterministic-endpoint-keys]]
+- [[decisions/deterministic-node-uuids]]

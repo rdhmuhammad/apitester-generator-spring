@@ -79,9 +79,12 @@ public class ApiTesterProperties {
     @Getter
     @Setter
     public static class Collection {
+        private boolean generate = true;
         private String name = "API Collection";
         private String description = "";
         private String baseUrl = "http://localhost:8080";
         private String outputPath = "postman_collection.json";
+        private boolean preserveUserChanges = true;
+        private String cachePath = ".apitester-cache.json";
     }
 }

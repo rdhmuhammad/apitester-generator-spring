@@ -67,13 +67,20 @@ public class ApiTesterAutoConfiguration {
     }
 
     @Bean
+    public com.apitester.generator.service.PostmanMergeService postmanMergeService() {
+        return new com.apitester.generator.service.PostmanMergeService();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "apitester.collection.generate", havingValue = "true", matchIfMissing = true)
     public StartupGeneratorListener startupGeneratorListener(
             ControllerScanner scanner,
             EndpointProcessor endpointProcessor,
             PostmanCollectionGenerator generator,
             PostmanCollectionWriter writer,
+            com.apitester.generator.service.PostmanMergeService mergeService,
             ApiTesterProperties properties) {
-        return new StartupGeneratorListener(scanner, endpointProcessor, generator, writer, properties);
+        return new StartupGeneratorListener(scanner, endpointProcessor, generator, writer, mergeService, properties);
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -89,11 +96,13 @@ public class ApiTesterAutoConfiguration {
         @Override
         public void addViewControllers(org.springframework.web.servlet.config.annotation.ViewControllerRegistry registry) {
             String uiPath = properties.getResolvedUiPath();
+            // Redirect bare path → trailing slash; the resource handler's PathResourceResolver
+            // already falls back to index.html, so no forward: view is needed.
             registry.addRedirectViewController(uiPath, uiPath + "/");
-            registry.addViewController(uiPath + "/").setViewName("forward:" + uiPath + "/index.html");
+            registry.addRedirectViewController(uiPath + "/", uiPath + "/index.html");
             if (!"/apitester".equals(uiPath)) {
                 registry.addRedirectViewController("/apitester", "/apitester/");
-                registry.addViewController("/apitester/").setViewName("forward:/apitester/index.html");
+                registry.addRedirectViewController("/apitester/", "/apitester/index.html");
             }
         }
 
@@ -106,6 +115,9 @@ public class ApiTesterAutoConfiguration {
                     .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {
                         @Override
                         protected org.springframework.core.io.Resource getResource(String resourcePath, org.springframework.core.io.Resource location) throws java.io.IOException {
+                            if (resourcePath.startsWith("api/") || "api".equals(resourcePath)) {
+                                return null;
+                            }
                             org.springframework.core.io.Resource requestedResource = location.createRelative(resourcePath);
                             return (requestedResource.exists() && requestedResource.isReadable())
                                     ? requestedResource
@@ -120,6 +132,9 @@ public class ApiTesterAutoConfiguration {
                         .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {
                             @Override
                             protected org.springframework.core.io.Resource getResource(String resourcePath, org.springframework.core.io.Resource location) throws java.io.IOException {
+                                if (resourcePath.startsWith("api/") || "api".equals(resourcePath)) {
+                                    return null;
+                                }
                                 org.springframework.core.io.Resource requestedResource = location.createRelative(resourcePath);
                                 return (requestedResource.exists() && requestedResource.isReadable())
                                         ? requestedResource
@@ -169,7 +184,6 @@ public class ApiTesterAutoConfiguration {
             config.addAllowedOriginPattern("*");
             config.addAllowedHeader("*");
             config.addAllowedMethod("*");
-            source.registerCorsConfiguration("/api/v1/**", config);
             source.registerCorsConfiguration("/apitester/**", config);
             return new org.springframework.web.filter.CorsFilter(source);
         }

@@ -47,4 +47,27 @@ class ApiTesterConditionalTest {
                     assertThat(context).doesNotHaveBean(ApiTesterAuthController.class);
                 });
     }
+
+    @Test
+    @DisplayName("Should NOT register StartupGeneratorListener when apitester.collection.generate=false")
+    void shouldNotCreateGeneratorListenerWhenGenerateIsFalse() {
+        contextRunner.withUserConfiguration(EnabledConfig.class)
+                .withPropertyValues("apitester.collection.generate=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(com.apitester.generator.listener.StartupGeneratorListener.class);
+                    // Web beans should still exist
+                    assertThat(context).hasSingleBean(ApiTesterService.class);
+                    assertThat(context).hasSingleBean(ApiTesterCollectionController.class);
+                    assertThat(context).hasSingleBean(ApiTesterAuthController.class);
+                });
+    }
+
+    @Test
+    @DisplayName("Should register StartupGeneratorListener by default")
+    void shouldCreateGeneratorListenerByDefault() {
+        contextRunner.withUserConfiguration(EnabledConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(com.apitester.generator.listener.StartupGeneratorListener.class);
+                });
+    }
 }

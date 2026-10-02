@@ -2,7 +2,7 @@
 
 **Summary**: Architectural pattern for packaging the Vite React frontend dist inside a Spring Boot starter JAR (META-INF/resources/apitester/), configuring SPA history routing fallback, and synchronizing dynamic environment variables.
 **Sources**: `document/raw/decision/endpoint_spec.md`
-**Last updated**: 2026-09-29.
+**Last updated**: 2026-09-30.
 
 ---
 
@@ -70,10 +70,10 @@ public static class ApiTesterWebConfiguration implements WebMvcConfigurer {
 
 ## Route Prefix & Dynamic `.env` Synchronization
 
-To support both default standalone deployment and embedded library setups:
-1. **Dual Route Mapping**: Controllers accept both the standard spec path `/api/v1/...` and the namespaced path `/apitester/api/v1/...`:
-   - `ApiTesterCollectionController`: `@RequestMapping({"/apitester/api/v1/collection", "/api/v1/collection"})`
-   - `ApiTesterAuthController`: `@RequestMapping({"/apitester/api/v1/auth", "/api/v1/auth"})`
+To avoid colliding with existing `/api/v1/...` routes in target host applications:
+1. **Isolated Route Mapping**: Controllers are mapped exclusively to `/apitester/api/v1/...` prefix:
+   - `ApiTesterCollectionController`: `@RequestMapping("/apitester/api/v1/collection")`
+   - `ApiTesterAuthController`: `@RequestMapping("/apitester/api/v1/auth")`
    - Endpoint aliases: `@GetMapping({"/read", "/read-selected"})` and `@PutMapping({"/write", "/write-selected"})` map unparameterized calls from the frontend directly to the active collection.
 2. **Dynamic `.env` Endpoint**: On initialization, Axios calls `fetch("/.env")` to discover runtime configuration. `ApiTesterUiController` responds to both `/.env` and `/apitester/.env` with:
    ```

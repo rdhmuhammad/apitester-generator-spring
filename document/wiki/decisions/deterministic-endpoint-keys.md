@@ -33,4 +33,5 @@ Adopt **`HTTP_METHOD:URL_PATH`** as the deterministic primary key when transform
 - [[concepts/flatten-diff-merge-unflatten]]
 - [[concepts/three-way-collection-merge]]
 - [[decisions/field-level-ownership-rules]]
+- [[decisions/deterministic-node-uuids]]
 - [[patterns/generator/three-way-merge-service]]

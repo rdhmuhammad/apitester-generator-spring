@@ -48,3 +48,4 @@ Collection files exported by various operating systems or IDEs may include a UTF
 - [[decisions/endpoint-spec-and-architecture]]
 - [[concepts/three-way-collection-merge]]
 - [[decisions/deterministic-endpoint-keys]]
+- [[decisions/deterministic-node-uuids]]

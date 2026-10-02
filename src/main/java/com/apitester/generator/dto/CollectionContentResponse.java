@@ -1,7 +1,6 @@
 package com.apitester.generator.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,5 +17,5 @@ public class CollectionContentResponse {
 
     private boolean changed;
     private String updatedAt;
-    private JsonNode content;
+    private DocsContent content;
 }

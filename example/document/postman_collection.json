@@ -1,13 +1,385 @@
 {
   "info" : {
-    "_postman_id" : "",
+    "_postman_id" : "ef22b227-1ebf-3509-9b1d-1b56402832cb",
     "name" : "Apitester Example API",
     "description" : "Auto-generated Postman collection for example CRUD",
     "schema" : "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item" : [ {
-    "funIden" : "",
+    "funIden" : "controller:AuthController",
     "name" : "Auth",
+    "item" : [ {
+      "funIden" : "AuthController#register",
+      "name" : "Register",
+      "request" : {
+        "funIden" : "AuthController#register",
+        "method" : "POST",
+        "header" : [ {
+          "id" : "2617b253-54b1-3287-9b50-2ebeeea0217f",
+          "key" : "Content-Type",
+          "value" : "application/json",
+          "description" : ""
+        } ],
+        "body" : {
+          "mode" : "raw",
+          "raw" : "{\r\n  \"username\" : \"ridho\",\r\n  \"password\" : \"\",\r\n  \"email\" : \"\"\r\n}"
+        },
+        "url" : {
+          "raw" : "{{baseUrl}}/auth/register",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "auth", "register" ]
+        }
+      },
+      "response" : [ {
+        "funIden" : "AuthController#register",
+        "id" : "8ddb9453-9797-3b7c-929b-def2cb7c3e3a",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text",
+        "header" : [ ]
+      } ],
+      "id" : "1e88f6a4-712e-3cbd-b10a-14639e7daca3"
+    }, {
+      "funIden" : "AuthController#logout",
+      "name" : "Logout",
+      "request" : {
+        "funIden" : "AuthController#logout",
+        "method" : "POST",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/auth/logout",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "auth", "logout" ]
+        }
+      },
+      "response" : [ {
+        "funIden" : "AuthController#logout",
+        "id" : "0e677529-ad57-31e0-99a1-c54c568db4d9",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text",
+        "header" : [ ]
+      } ],
+      "id" : "bb0baf47-82af-3c20-a7dd-505188cafd02"
+    }, {
+      "funIden" : "AuthController#login",
+      "name" : "Login",
+      "request" : {
+        "funIden" : "AuthController#login",
+        "method" : "POST",
+        "header" : [ {
+          "id" : "1b1cd805-7706-39c3-90cd-3e13d3618619",
+          "key" : "Content-Type",
+          "value" : "application/json",
+          "description" : ""
+        } ],
+        "body" : {
+          "mode" : "raw",
+          "raw" : "{\r\n  \"username\" : \"rdhmuhammad\",\r\n  \"password\" : \"Password\"\r\n}"
+        },
+        "url" : {
+          "raw" : "{{baseUrl}}/auth/login",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "auth", "login" ]
+        }
+      },
+      "response" : [ {
+        "funIden" : "AuthController#login",
+        "id" : "7935d17c-419d-383b-9bf1-27c51826f3f9",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text",
+        "header" : [ ]
+      } ],
+      "id" : "19d6fbce-692c-3c22-ab8e-891250275302"
+    } ],
+    "id" : "6c4f28f3-09c4-34e1-a638-3d41e62a3e6a"
+  }, {
+    "funIden" : "folder:Management",
+    "name" : "Management",
+    "item" : [ {
+      "funIden" : "controller:MerchantManagementController",
+      "name" : "Merchant Management",
+      "item" : [ {
+        "funIden" : "MerchantManagementController#update",
+        "name" : "Update",
+        "request" : {
+          "funIden" : "MerchantManagementController#update",
+          "method" : "PUT",
+          "header" : [ {
+            "id" : "1ffa8db9-432f-349c-a0b1-3347e20a7206",
+            "key" : "Content-Type",
+            "value" : "application/json",
+            "description" : ""
+          } ],
+          "body" : {
+            "mode" : "raw",
+            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"email\" : \"\"\r\n}"
+          },
+          "url" : {
+            "raw" : "{{baseUrl}}/management/merchant/:id",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "merchant", "id" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "MerchantManagementController#update",
+          "id" : "45b40c73-b769-3b31-81a4-b9125686aa05",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "aa086468-8bb9-39a9-a1cb-7e41c263c34f"
+      }, {
+        "funIden" : "MerchantManagementController#delete",
+        "name" : "Delete",
+        "request" : {
+          "funIden" : "MerchantManagementController#delete",
+          "method" : "DELETE",
+          "header" : [ ],
+          "url" : {
+            "raw" : "{{baseUrl}}/management/merchant/:id",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "merchant", "id" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "MerchantManagementController#delete",
+          "id" : "6e22c6dc-0323-3d75-a37d-1b371b52f38b",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "5e4df6d3-60f5-35c8-9eeb-a6b4e1a504c0"
+      }, {
+        "funIden" : "MerchantManagementController#create",
+        "name" : "Create",
+        "request" : {
+          "funIden" : "MerchantManagementController#create",
+          "method" : "POST",
+          "header" : [ {
+            "id" : "8e83ae65-bab6-36f3-8145-9ccfc5d73a2c",
+            "key" : "Content-Type",
+            "value" : "application/json",
+            "description" : ""
+          } ],
+          "body" : {
+            "mode" : "raw",
+            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"email\" : \"\"\r\n}"
+          },
+          "url" : {
+            "raw" : "{{baseUrl}}/management/merchant",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "merchant" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "MerchantManagementController#create",
+          "id" : "318dbd0e-9019-3674-a567-5b85d2861ae7",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "9ae023f6-682b-343b-bb6c-9d08e8f49e28"
+      }, {
+        "funIden" : "MerchantManagementController#getAll",
+        "name" : "Get All",
+        "request" : {
+          "funIden" : "MerchantManagementController#getAll",
+          "method" : "GET",
+          "header" : [ ],
+          "url" : {
+            "raw" : "{{baseUrl}}/management/merchant",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "merchant" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "MerchantManagementController#getAll",
+          "id" : "0615048d-287b-3d44-8887-074fb93985ae",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "c466359d-cdf9-34a8-8d46-ed2952385b2a"
+      }, {
+        "funIden" : "MerchantManagementController#getById",
+        "name" : "Get By Id",
+        "request" : {
+          "funIden" : "MerchantManagementController#getById",
+          "method" : "GET",
+          "header" : [ ],
+          "url" : {
+            "raw" : "{{baseUrl}}/management/merchant/:id",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "merchant", "id" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "MerchantManagementController#getById",
+          "id" : "f4643884-e094-3bea-b873-fb17794eb02e",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "04434f5b-fb9e-355b-b3c1-2fd53187aba0"
+      } ],
+      "id" : "2d7b5314-129e-3584-9e45-a71120479262"
+    }, {
+      "funIden" : "controller:ProductManagementController",
+      "name" : "Product Management",
+      "item" : [ {
+        "funIden" : "ProductManagementController#update",
+        "name" : "Update",
+        "request" : {
+          "funIden" : "ProductManagementController#update",
+          "method" : "PUT",
+          "header" : [ {
+            "id" : "7b21cae9-1e96-358d-8b42-cf5a6bccc934",
+            "key" : "Content-Type",
+            "value" : "application/json",
+            "description" : ""
+          } ],
+          "body" : {
+            "mode" : "raw",
+            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"price\" : 0.0\r\n}"
+          },
+          "url" : {
+            "raw" : "{{baseUrl}}/management/product/:id",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "product", "id" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "ProductManagementController#update",
+          "id" : "4298b3a6-d85d-362b-94e1-3754ff95c251",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "f2dbbfa2-e729-3353-8a15-323813f31fbb"
+      }, {
+        "funIden" : "ProductManagementController#delete",
+        "name" : "Delete",
+        "request" : {
+          "funIden" : "ProductManagementController#delete",
+          "method" : "DELETE",
+          "header" : [ ],
+          "url" : {
+            "raw" : "{{baseUrl}}/management/product/:id",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "product", "id" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "ProductManagementController#delete",
+          "id" : "f0230e82-8335-3cb5-9cab-0ab1f5e95f13",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "3c0fa447-5e03-321b-98d8-8e980e0def2c"
+      }, {
+        "funIden" : "ProductManagementController#create",
+        "name" : "Create",
+        "request" : {
+          "funIden" : "ProductManagementController#create",
+          "method" : "POST",
+          "header" : [ {
+            "id" : "09e43054-9fcb-35b6-b1f1-e114742f162d",
+            "key" : "Content-Type",
+            "value" : "application/json",
+            "description" : ""
+          } ],
+          "body" : {
+            "mode" : "raw",
+            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"price\" : 0.0\r\n}"
+          },
+          "url" : {
+            "raw" : "{{baseUrl}}/management/product",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "product" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "ProductManagementController#create",
+          "id" : "5cc88f12-370a-3d11-a777-c32dbc283a27",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "00e3405b-8c2f-3937-8a14-8bb9215bf8f5"
+      }, {
+        "funIden" : "ProductManagementController#getAll",
+        "name" : "Get All",
+        "request" : {
+          "funIden" : "ProductManagementController#getAll",
+          "method" : "GET",
+          "header" : [ ],
+          "url" : {
+            "raw" : "{{baseUrl}}/management/product",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "product" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "ProductManagementController#getAll",
+          "id" : "07df373f-1165-3054-824a-f5c7fd649e00",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "94ec26f2-d8bf-3f92-96c7-bdbe36aeca8d"
+      }, {
+        "funIden" : "ProductManagementController#getById",
+        "name" : "Get By Id",
+        "request" : {
+          "funIden" : "ProductManagementController#getById",
+          "method" : "GET",
+          "header" : [ ],
+          "url" : {
+            "raw" : "{{baseUrl}}/management/product/:id",
+            "host" : [ "{{baseUrl}}" ],
+            "path" : [ "management", "product", "id" ]
+          }
+        },
+        "response" : [ {
+          "funIden" : "ProductManagementController#getById",
+          "id" : "c3b4f440-361f-3191-a9b9-306036c0c42a",
+          "name" : "Success",
+          "status" : "OK",
+          "code" : 200,
+          "_postman_previewlanguage" : "Text",
+          "header" : [ ]
+        } ],
+        "id" : "006e5b3d-719e-3081-a27d-a902e9973852"
+      } ],
+      "id" : "4e15d724-3438-371e-9af5-1fc4fbe1b3f6"
+    } ],
+    "id" : "9d318eae-87e2-3879-8588-3f33b43f878b"
+  }, {
+    "name" : "Custom Requests",
     "item" : [ {
       "funIden" : "",
       "name" : "Register",
@@ -15,6 +387,7 @@
         "funIden" : "",
         "method" : "POST",
         "header" : [ {
+          "id" : "2403cf75-c71c-437c-9fc9-b972d6d99386",
           "key" : "Content-Type",
           "value" : "application/json",
           "description" : ""
@@ -30,12 +403,11 @@
         }
       },
       "response" : [ {
-        "funIden" : "",
+        "id" : "bbbf5fe6-b4b8-479d-991e-35a4e7198351",
         "name" : "Success",
         "status" : "OK",
         "code" : 200,
-        "_postman_previewlanguage" : "Text",
-        "header" : [ ]
+        "_postman_previewlanguage" : "Text"
       } ],
       "id" : "eb86783c-d694-46fe-94ef-dbe17e7598d2"
     }, {
@@ -45,6 +417,7 @@
         "funIden" : "",
         "method" : "POST",
         "header" : [ {
+          "id" : "89c4c237-958b-4696-b6ef-525b2ee414c7",
           "key" : "Content-Type",
           "value" : "application/json",
           "description" : ""
@@ -60,12 +433,11 @@
         }
       },
       "response" : [ {
-        "funIden" : "",
+        "id" : "63d6a5a9-e774-4092-8e3f-17543937ac75",
         "name" : "Success",
         "status" : "OK",
         "code" : 200,
-        "_postman_previewlanguage" : "Text",
-        "header" : [ ]
+        "_postman_previewlanguage" : "Text"
       } ],
       "id" : "f175a6f8-39d2-4901-9839-afacd4cb4eb0"
     }, {
@@ -82,282 +454,263 @@
         }
       },
       "response" : [ {
-        "funIden" : "",
+        "id" : "9f79dc1a-bffd-4cca-a88e-cb8d52c6b3de",
         "name" : "Success",
         "status" : "OK",
         "code" : 200,
-        "_postman_previewlanguage" : "Text",
-        "header" : [ ]
+        "_postman_previewlanguage" : "Text"
       } ],
       "id" : "4602924c-f12f-4951-bb63-00b1f5198898"
-    } ]
-  }, {
-    "funIden" : "",
-    "name" : "Management",
-    "item" : [ {
-      "funIden" : "",
-      "name" : "Merchant Management",
-      "item" : [ {
-        "funIden" : "",
-        "name" : "Update",
-        "request" : {
-          "funIden" : "",
-          "method" : "PUT",
-          "header" : [ {
-            "key" : "Content-Type",
-            "value" : "application/json",
-            "description" : ""
-          } ],
-          "body" : {
-            "mode" : "raw",
-            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"email\" : \"\"\r\n}"
-          },
-          "url" : {
-            "raw" : "{{baseUrl}}/management/merchant/:id",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "merchant", "id" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "78a4bd8a-1b75-4134-922b-4d616573ba2b"
-      }, {
-        "funIden" : "",
-        "name" : "Delete",
-        "request" : {
-          "funIden" : "",
-          "method" : "DELETE",
-          "header" : [ ],
-          "url" : {
-            "raw" : "{{baseUrl}}/management/merchant/:id",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "merchant", "id" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "cdb5e0c0-63ca-4db3-98ab-e097593c6567"
-      }, {
-        "funIden" : "",
-        "name" : "Create",
-        "request" : {
-          "funIden" : "",
-          "method" : "POST",
-          "header" : [ {
-            "key" : "Content-Type",
-            "value" : "application/json",
-            "description" : ""
-          } ],
-          "body" : {
-            "mode" : "raw",
-            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"email\" : \"\"\r\n}"
-          },
-          "url" : {
-            "raw" : "{{baseUrl}}/management/merchant",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "merchant" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "12af58dc-a065-485b-a9b9-37573cbf9c56"
-      }, {
-        "funIden" : "",
-        "name" : "Get All",
-        "request" : {
-          "funIden" : "",
-          "method" : "GET",
-          "header" : [ ],
-          "url" : {
-            "raw" : "{{baseUrl}}/management/merchant",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "merchant" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "90ab24b8-1102-47e6-ae90-29e685bc0cfa"
-      }, {
-        "funIden" : "",
-        "name" : "Get By Id",
-        "request" : {
-          "funIden" : "",
-          "method" : "GET",
-          "header" : [ ],
-          "url" : {
-            "raw" : "{{baseUrl}}/management/merchant/:id",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "merchant", "id" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "5fd50583-7b47-45e7-ab85-b076b9c3ed61"
-      } ]
     }, {
       "funIden" : "",
-      "name" : "Product Management",
-      "item" : [ {
+      "name" : "Update",
+      "request" : {
         "funIden" : "",
-        "name" : "Update",
-        "request" : {
-          "funIden" : "",
-          "method" : "PUT",
-          "header" : [ {
-            "key" : "Content-Type",
-            "value" : "application/json",
-            "description" : ""
-          } ],
-          "body" : {
-            "mode" : "raw",
-            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"price\" : 0.0\r\n}"
-          },
-          "url" : {
-            "raw" : "{{baseUrl}}/management/product/:id",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "product", "id" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
+        "method" : "PUT",
+        "header" : [ {
+          "id" : "715bcbaf-bf1c-4b5b-936f-4b4c3f62ae00",
+          "key" : "Content-Type",
+          "value" : "application/json",
+          "description" : ""
         } ],
-        "id" : "cf304803-0ea5-4305-a39c-81b5879e99f4"
-      }, {
+        "body" : {
+          "mode" : "raw",
+          "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"email\" : \"\"\r\n}"
+        },
+        "url" : {
+          "raw" : "{{baseUrl}}/management/merchant/:id",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "merchant", "id" ]
+        }
+      },
+      "response" : [ {
+        "id" : "a3168a97-4635-4935-807c-1d6996109d8c",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "78a4bd8a-1b75-4134-922b-4d616573ba2b"
+    }, {
+      "funIden" : "",
+      "name" : "Delete",
+      "request" : {
         "funIden" : "",
-        "name" : "Delete",
-        "request" : {
-          "funIden" : "",
-          "method" : "DELETE",
-          "header" : [ ],
-          "url" : {
-            "raw" : "{{baseUrl}}/management/product/:id",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "product", "id" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "0f872087-a9d8-4d0d-a153-0b1c5eea36ff"
-      }, {
+        "method" : "DELETE",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/management/merchant/:id",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "merchant", "id" ]
+        }
+      },
+      "response" : [ {
+        "id" : "9874566a-07ee-4f8c-b7a1-2a245517cacb",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "cdb5e0c0-63ca-4db3-98ab-e097593c6567"
+    }, {
+      "funIden" : "",
+      "name" : "Create",
+      "request" : {
         "funIden" : "",
-        "name" : "Create",
-        "request" : {
-          "funIden" : "",
-          "method" : "POST",
-          "header" : [ {
-            "key" : "Content-Type",
-            "value" : "application/json",
-            "description" : ""
-          } ],
-          "body" : {
-            "mode" : "raw",
-            "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"price\" : 0.0\r\n}"
-          },
-          "url" : {
-            "raw" : "{{baseUrl}}/management/product",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "product" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
+        "method" : "POST",
+        "header" : [ {
+          "id" : "f0106200-ef8a-45af-b652-49ac0994d27e",
+          "key" : "Content-Type",
+          "value" : "application/json",
+          "description" : ""
         } ],
-        "id" : "7670ddd2-77f0-4233-a033-3a6f7bf969cb"
-      }, {
+        "body" : {
+          "mode" : "raw",
+          "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"email\" : \"\"\r\n}"
+        },
+        "url" : {
+          "raw" : "{{baseUrl}}/management/merchant",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "merchant" ]
+        }
+      },
+      "response" : [ {
+        "id" : "9faeec2c-c9dc-437c-9bc2-f29804ba584a",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "12af58dc-a065-485b-a9b9-37573cbf9c56"
+    }, {
+      "funIden" : "",
+      "name" : "Get All",
+      "request" : {
         "funIden" : "",
-        "name" : "Get All",
-        "request" : {
-          "funIden" : "",
-          "method" : "GET",
-          "header" : [ ],
-          "url" : {
-            "raw" : "{{baseUrl}}/management/product",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "product" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
-        } ],
-        "id" : "aaeb6443-a2cc-4853-99cd-65d2e6f9b372"
-      }, {
+        "method" : "GET",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/management/merchant",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "merchant" ]
+        }
+      },
+      "response" : [ {
+        "id" : "e64337db-9a42-41c8-94e3-96569b80707a",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "90ab24b8-1102-47e6-ae90-29e685bc0cfa"
+    }, {
+      "funIden" : "",
+      "name" : "Get By Id",
+      "request" : {
         "funIden" : "",
-        "name" : "Get By Id",
-        "request" : {
-          "funIden" : "",
-          "method" : "GET",
-          "header" : [ ],
-          "url" : {
-            "raw" : "{{baseUrl}}/management/product/:id",
-            "host" : [ "{{baseUrl}}" ],
-            "path" : [ "management", "product", "id" ]
-          }
-        },
-        "response" : [ {
-          "funIden" : "",
-          "name" : "Success",
-          "status" : "OK",
-          "code" : 200,
-          "_postman_previewlanguage" : "Text",
-          "header" : [ ]
+        "method" : "GET",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/management/merchant/:id",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "merchant", "id" ]
+        }
+      },
+      "response" : [ {
+        "id" : "8cbdcac8-4c64-45e6-ac9c-70d2a48f5eb9",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "5fd50583-7b47-45e7-ab85-b076b9c3ed61"
+    }, {
+      "funIden" : "",
+      "name" : "Update",
+      "request" : {
+        "funIden" : "",
+        "method" : "PUT",
+        "header" : [ {
+          "id" : "cacef583-56f1-4f85-8342-e5000bed3ae8",
+          "key" : "Content-Type",
+          "value" : "application/json",
+          "description" : ""
         } ],
-        "id" : "9784ebdd-b3e1-4f64-9553-4caffa1c5a28"
-      } ]
+        "body" : {
+          "mode" : "raw",
+          "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"price\" : 0.0\r\n}"
+        },
+        "url" : {
+          "raw" : "{{baseUrl}}/management/product/:id",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "product", "id" ]
+        }
+      },
+      "response" : [ {
+        "id" : "56350476-31fd-4cfd-b778-3705e4b5183b",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "cf304803-0ea5-4305-a39c-81b5879e99f4"
+    }, {
+      "funIden" : "",
+      "name" : "Delete",
+      "request" : {
+        "funIden" : "",
+        "method" : "DELETE",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/management/product/:id",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "product", "id" ]
+        }
+      },
+      "response" : [ {
+        "id" : "8705f4e5-31ac-4643-b087-33f5535d5bd2",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "0f872087-a9d8-4d0d-a153-0b1c5eea36ff"
+    }, {
+      "funIden" : "",
+      "name" : "Create",
+      "request" : {
+        "funIden" : "",
+        "method" : "POST",
+        "header" : [ {
+          "id" : "170e9be7-1dfd-4442-8b34-5bfb8ccd6e7e",
+          "key" : "Content-Type",
+          "value" : "application/json",
+          "description" : ""
+        } ],
+        "body" : {
+          "mode" : "raw",
+          "raw" : "{\r\n  \"name\" : \"\",\r\n  \"description\" : \"\",\r\n  \"price\" : 0.0\r\n}"
+        },
+        "url" : {
+          "raw" : "{{baseUrl}}/management/product",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "product" ]
+        }
+      },
+      "response" : [ {
+        "id" : "d7d17e96-9cbe-40eb-9bea-3615844e41c2",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "7670ddd2-77f0-4233-a033-3a6f7bf969cb"
+    }, {
+      "funIden" : "",
+      "name" : "Get All",
+      "request" : {
+        "funIden" : "",
+        "method" : "GET",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/management/product",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "product" ]
+        }
+      },
+      "response" : [ {
+        "id" : "fdcb6d5e-834b-4d0d-a1d2-c2eb1a58982e",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "aaeb6443-a2cc-4853-99cd-65d2e6f9b372"
+    }, {
+      "funIden" : "",
+      "name" : "Get By Id",
+      "request" : {
+        "funIden" : "",
+        "method" : "GET",
+        "header" : [ ],
+        "url" : {
+          "raw" : "{{baseUrl}}/management/product/:id",
+          "host" : [ "{{baseUrl}}" ],
+          "path" : [ "management", "product", "id" ]
+        }
+      },
+      "response" : [ {
+        "id" : "6064a1fe-8251-4dfa-8991-a35ac05d75f8",
+        "name" : "Success",
+        "status" : "OK",
+        "code" : 200,
+        "_postman_previewlanguage" : "Text"
+      } ],
+      "id" : "9784ebdd-b3e1-4f64-9553-4caffa1c5a28"
     } ]
   } ],
   "variable" : [ {
-    "id" : "",
+    "id" : "858dec9a-e8e0-3ac7-91d4-baa0031669d4",
     "key" : "baseUrl",
     "value" : "http://localhost:8087",
     "category" : "BASE_URL"

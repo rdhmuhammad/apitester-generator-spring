@@ -5,14 +5,14 @@ import com.apitester.generator.dto.AuthDto;
 import com.apitester.generator.service.ApiTesterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
 @Slf4j
-@RequestMapping({"/api/v1/auth", "/apitester/api/v1/auth"})
+@RestController
+@RequestMapping("/apitester/api/v1/auth")
 @RequiredArgsConstructor
 public class ApiTesterAuthController {
 
@@ -20,17 +20,18 @@ public class ApiTesterAuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthDto.LoginData>> login(
-            @RequestBody AuthDto.LoginRequest request,
-            HttpServletResponse response) {
+            @RequestBody AuthDto.LoginRequest request) {
         AuthDto.LoginData data = apiTesterService.login(request);
 
-        Cookie cookie = new Cookie("token", data.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (data.getExpiresAt() - System.currentTimeMillis() / 1000));
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("token", data.getToken())
+                .httpOnly(true)
+                .path("/")
+                .maxAge(data.getExpiresAt() - System.currentTimeMillis() / 1000)
+                .build();
 
-        return ResponseEntity.ok(ApiResponse.success("Login successful", data));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success("Login successful", data));
     }
 
     @GetMapping("/me")

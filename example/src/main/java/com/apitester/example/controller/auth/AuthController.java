@@ -43,7 +43,7 @@ public class AuthController {
     public ApiResponse<AuthResponse> register(@RequestBody RegisterRequest request) {
         try {
             User user = userDetailsService.register(
-                    request.getUsername(), request.getPassword(), request.getEmail(), passwordEncoder);
+                    request.getEmail(), request.getPassword(), request.getEmail(), passwordEncoder);
             String token = jwtUtil.generateToken(user.getUsername());
             return ApiResponse.ok("Registration successful", new AuthResponse(token, user.getUsername()));
         } catch (Exception e) {

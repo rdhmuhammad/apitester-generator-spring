@@ -16,7 +16,7 @@ The collection service acts as the bridge between filesystem storage and the fro
 1. **Lookup**: Retrieve the collection metadata record by database ID.
 2. **Read File**: Read raw bytes from the target filesystem path.
 3. **BOM Sanitization**: Check for and strip the UTF-8 Byte Order Mark (`\uFEFF`) from the byte stream.
-4. **JSON Deserialization**: Parse into a collection DTO model.
+4. **JSON Deserialization**: Parse into a strongly-typed collection DTO model (`DocsContent`, matching `internal/usecase/watch/dto.go`).
 5. **Auto-Categorize Base URL**:
    Inspect all entries in `variable`. Any variable whose key matches `(?i)(base.*url|url.*base)` and has no custom category is categorized as `"BASE_URL"`.
 6. **Recursive UUID Injection (`setId`)**:
@@ -28,11 +28,12 @@ The collection service acts as the bridge between filesystem storage and the fro
    - Form-data payload entries
    If any item lacks an `id`, inject a newly generated UUID string.
 
-### 2. File Writing & Watcher Sync (`PUT /write/:id`)
-1. **Validate**: Ensure request payload is valid, non-empty JSON.
-2. **Resolve Path**: Lookup file location from the collection record.
-3. **Persist to Disk**: Write file content using `0644` file permissions.
-4. **Watcher Debouncing / State Update**:
+### 2. File Writing & Watcher Sync (`PUT /write/:id`, `PUT /write-selected`)
+1. **Strongly Typed Request Body**: The endpoint accepts `@RequestBody DocsContent content` rather than untyped `JsonNode` or raw strings.
+2. **Validate**: Ensure request payload is valid and non-null.
+3. **Resolve Path**: Lookup file location from the collection record.
+4. **Persist to Disk**: Write formatted collection JSON with two-space indentation using `objectMapper.writerWithDefaultPrettyPrinter()`.
+5. **Watcher Debouncing / State Update**:
    Update the in-memory file watcher cache with the newly written content and timestamp. This prevents the filesystem watcher from firing a false-positive "external file edit" event back to the frontend.
 
 ### 3. Collection Activation (`PUT /select/:id`)

@@ -3,6 +3,7 @@ package com.apitester.generator.controller;
 import com.apitester.generator.dto.ApiResponse;
 import com.apitester.generator.dto.CollectionContentResponse;
 import com.apitester.generator.dto.CollectionMetadata;
+import com.apitester.generator.dto.DocsContent;
 import com.apitester.generator.dto.EnvironmentDto;
 import com.apitester.generator.service.ApiTesterService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-@RequestMapping({"/api/v1/collection", "/apitester/api/v1/collection"})
+@RestController
+@RequestMapping("/apitester/api/v1/collection")
 @RequiredArgsConstructor
 public class ApiTesterCollectionController {
 
@@ -43,14 +45,14 @@ public class ApiTesterCollectionController {
     }
 
     @PutMapping({"/write", "/write-selected"})
-    public ResponseEntity<ApiResponse<Void>> writeSelectedCollection(@RequestBody String rawJson) throws IOException {
-        apiTesterService.writeSelectedCollection(rawJson);
+    public ResponseEntity<ApiResponse<Void>> writeSelectedCollection(@RequestBody DocsContent content) throws IOException {
+        apiTesterService.writeSelectedCollection(content);
         return ResponseEntity.ok(ApiResponse.successMessage("Collection written successfully"));
     }
 
     @PutMapping("/write/{id}")
-    public ResponseEntity<ApiResponse<Void>> writeCollection(@PathVariable String id, @RequestBody String rawJson) throws IOException {
-        apiTesterService.writeCollection(id, rawJson);
+    public ResponseEntity<ApiResponse<Void>> writeCollection(@PathVariable String id, @RequestBody DocsContent content) throws IOException {
+        apiTesterService.writeCollection(id, content);
         return ResponseEntity.ok(ApiResponse.successMessage("Collection written successfully"));
     }
 
@@ -81,10 +83,10 @@ public class ApiTesterCollectionController {
         return ResponseEntity.ok(ApiResponse.successMessage("Environments written successfully"));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+    @ExceptionHandler({IllegalArgumentException.class, org.springframework.http.converter.HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiResponse<Void>> handleBadRequestException(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                .body(ApiResponse.error(e.getMessage() != null ? e.getMessage() : "Invalid data."));
     }
 
     @ExceptionHandler(Exception.class)

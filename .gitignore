@@ -47,3 +47,8 @@ src/main/resources/application.properties
 /logDir_IS_UNDEFINED/
 /output/
 
+.obsidian
+.apitester-cache.json
+*.generator-cache.json
+.opencode
+.agents

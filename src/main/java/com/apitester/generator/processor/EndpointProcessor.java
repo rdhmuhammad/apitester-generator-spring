@@ -31,14 +31,17 @@ import java.util.Set;
 @Slf4j
 public class EndpointProcessor {
 
-    private static final Set<Class<?>> DEFAULT_IGNORED_TYPES = Set.of(
-            javax.servlet.http.HttpServletRequest.class,
-            javax.servlet.http.HttpServletResponse.class,
-            javax.servlet.http.HttpSession.class,
-            java.security.Principal.class,
-            org.springframework.validation.BindingResult.class,
-            org.springframework.ui.Model.class,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes.class
+    private static final Set<String> DEFAULT_IGNORED_CLASS_NAMES = Set.of(
+            "javax.servlet.http.HttpServletRequest",
+            "javax.servlet.http.HttpServletResponse",
+            "javax.servlet.http.HttpSession",
+            "jakarta.servlet.http.HttpServletRequest",
+            "jakarta.servlet.http.HttpServletResponse",
+            "jakarta.servlet.http.HttpSession",
+            "java.security.Principal",
+            "org.springframework.validation.BindingResult",
+            "org.springframework.ui.Model",
+            "org.springframework.web.servlet.mvc.support.RedirectAttributes"
     );
 
     private final DtoAnalyzer dtoAnalyzer;
@@ -218,6 +221,8 @@ public class EndpointProcessor {
         return EndpointInfo.builder()
                 .name(ValueUtils.CemalToWords(method.getName()))
                 .request(request)
+                .methodName(method.getName())
+                .controllerClassName(controllerName)
                 .build();
     }
 
@@ -300,8 +305,11 @@ public class EndpointProcessor {
     boolean shouldIgnore(Parameter param, Set<Class<?>> ignoreParams) {
         Class<?> paramType = param.getType();
         if (ignoreParams.contains(paramType)) return true;
-        for (Class<?> ignoredType : DEFAULT_IGNORED_TYPES) {
-            if (ignoredType.isAssignableFrom(paramType)) return true;
+        for (Class<?> clazz = paramType; clazz != null && clazz != Object.class; clazz = clazz.getSuperclass()) {
+            if (DEFAULT_IGNORED_CLASS_NAMES.contains(clazz.getName())) return true;
+            for (Class<?> iface : clazz.getInterfaces()) {
+                if (DEFAULT_IGNORED_CLASS_NAMES.contains(iface.getName())) return true;
+            }
         }
         return false;
     }
@@ -373,5 +381,7 @@ public class EndpointProcessor {
     public static class EndpointInfo {
         private String name;
         private PostmanRequest request;
+        private String methodName;
+        private String controllerClassName;
     }
 }
