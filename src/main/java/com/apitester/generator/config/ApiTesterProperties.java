@@ -14,12 +14,6 @@ import java.util.List;
 public class ApiTesterProperties {
 
     private boolean enabled = true;
-    private String basePackage = "";
-    private String parentFolder = "";
-    private String format = "json";
-    private String includeHeaders = "";
-    private int timeout = 5000;
-    private boolean generateEnvFile = true;
     private String path = "/apitester";
     private String uiPath = "/apitester";
     private String username;
@@ -73,7 +67,6 @@ public class ApiTesterProperties {
     public static class Auth {
         private String username = "admin";
         private String password = "secret";
-        private String jwtSecret = "default-secret-change-me";
     }
 
     @Getter

@@ -26,10 +26,7 @@ public class ApiTesterAutoConfiguration {
     public void extractGlobalVariables(ApplicationContext ctx, ApiTesterProperties properties) {
         Map<String, Object> beans = ctx.getBeansWithAnnotation(EnableApiTester.class);
         for (Object bean : beans.values()) {
-            Class<?> clazz = bean.getClass();
-            if (clazz.getSimpleName().contains("$$")) {
-                clazz = clazz.getSuperclass();
-            }
+            Class<?> clazz = org.springframework.util.ClassUtils.getUserClass(bean);
             EnableApiTester ann = clazz.getAnnotation(EnableApiTester.class);
             if (ann == null) continue;
             for (EnableApiTester.Variable v : ann.globalVariables()) {
@@ -109,39 +106,27 @@ public class ApiTesterAutoConfiguration {
         @Override
         public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
             String uiPath = properties.getResolvedUiPath();
-            registry.addResourceHandler(uiPath + "/**")
+            org.springframework.web.servlet.resource.PathResourceResolver resolver = new org.springframework.web.servlet.resource.PathResourceResolver() {
+                @Override
+                protected org.springframework.core.io.Resource getResource(String resourcePath, org.springframework.core.io.Resource location) throws java.io.IOException {
+                    if (resourcePath.startsWith("api/") || "api".equals(resourcePath)) {
+                        return null;
+                    }
+                    org.springframework.core.io.Resource requestedResource = location.createRelative(resourcePath);
+                    return (requestedResource.exists() && requestedResource.isReadable())
+                            ? requestedResource
+                            : location.createRelative("index.html");
+                }
+            };
+
+            String[] patterns = "/apitester".equals(uiPath)
+                    ? new String[]{uiPath + "/**"}
+                    : new String[]{uiPath + "/**", "/apitester/**"};
+
+            registry.addResourceHandler(patterns)
                     .addResourceLocations("classpath:/META-INF/resources/apitester/", "classpath:/static/apitester/")
                     .resourceChain(true)
-                    .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {
-                        @Override
-                        protected org.springframework.core.io.Resource getResource(String resourcePath, org.springframework.core.io.Resource location) throws java.io.IOException {
-                            if (resourcePath.startsWith("api/") || "api".equals(resourcePath)) {
-                                return null;
-                            }
-                            org.springframework.core.io.Resource requestedResource = location.createRelative(resourcePath);
-                            return (requestedResource.exists() && requestedResource.isReadable())
-                                    ? requestedResource
-                                    : location.createRelative("index.html");
-                        }
-                    });
-
-            if (!"/apitester".equals(uiPath)) {
-                registry.addResourceHandler("/apitester/**")
-                        .addResourceLocations("classpath:/META-INF/resources/apitester/", "classpath:/static/apitester/")
-                        .resourceChain(true)
-                        .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {
-                            @Override
-                            protected org.springframework.core.io.Resource getResource(String resourcePath, org.springframework.core.io.Resource location) throws java.io.IOException {
-                                if (resourcePath.startsWith("api/") || "api".equals(resourcePath)) {
-                                    return null;
-                                }
-                                org.springframework.core.io.Resource requestedResource = location.createRelative(resourcePath);
-                                return (requestedResource.exists() && requestedResource.isReadable())
-                                        ? requestedResource
-                                        : location.createRelative("index.html");
-                            }
-                        });
-            }
+                    .addResolver(resolver);
         }
 
         @Bean

@@ -16,8 +16,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class DtoAnalyzer {
 
-    private static final Pattern CAMEL_TO_SNAKE = Pattern.compile("([a-z])([A-Z]+)");
-    private static final Pattern CAMEL_TO_KEBAB = Pattern.compile("([a-z])([A-Z]+)");
+    private static final Pattern WORD_BOUNDARY = Pattern.compile("([a-z])([A-Z]+)");
 
     public Map<String, Class<?>> resolveQueryParams(Class<?> dtoClass) {
         Map<String, Class<?>> result = new LinkedHashMap<>();
@@ -92,35 +91,20 @@ public class DtoAnalyzer {
         if (strategyClass == null) return fieldName;
 
         String className = strategyClass.getSimpleName();
-
-        if ("SnakeCaseStrategy".equals(className)) {
-            return camelToSnake(fieldName);
+        switch (className) {
+            case "SnakeCaseStrategy":
+                return WORD_BOUNDARY.matcher(fieldName).replaceAll("$1_$2").toLowerCase();
+            case "KebabCaseStrategy":
+                return WORD_BOUNDARY.matcher(fieldName).replaceAll("$1-$2").toLowerCase();
+            case "LowerCaseStrategy":
+                return fieldName.toLowerCase();
+            case "UpperCamelCaseStrategy":
+                return fieldName.isEmpty() ? fieldName : Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+            case "LowerCamelCaseStrategy":
+                return Introspector.decapitalize(fieldName);
+            default:
+                return fieldName;
         }
-        if ("KebabCaseStrategy".equals(className)) {
-            return camelToKebab(fieldName);
-        }
-        if ("LowerCaseStrategy".equals(className)) {
-            return fieldName.toLowerCase();
-        }
-        if ("UpperCamelCaseStrategy".equals(className)) {
-            if (fieldName.isEmpty()) return fieldName;
-            return Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-        }
-        if ("LowerCamelCaseStrategy".equals(className)) {
-            return Introspector.decapitalize(fieldName);
-        }
-
-        return fieldName;
-    }
-
-    private String camelToSnake(String input) {
-        String result = CAMEL_TO_SNAKE.matcher(input).replaceAll("$1_$2");
-        return result.toLowerCase();
-    }
-
-    private String camelToKebab(String input) {
-        String result = CAMEL_TO_KEBAB.matcher(input).replaceAll("$1-$2");
-        return result.toLowerCase();
     }
 
     public Object generateExampleValue(Class<?> type) {

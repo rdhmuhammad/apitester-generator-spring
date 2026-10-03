@@ -52,11 +52,7 @@ public class ApiTesterService {
         File file = getCollectionFile();
         if (file.exists()) {
             try {
-                byte[] bytes = Files.readAllBytes(file.toPath());
-                String contentStr = new String(bytes, StandardCharsets.UTF_8);
-                if (contentStr.startsWith("\uFEFF")) {
-                    contentStr = contentStr.substring(1);
-                }
+                String contentStr = readUtf8String(file);
                 DocsContent docsContent = objectMapper.readValue(contentStr, DocsContent.class);
                 if (docsContent.getInfo() != null && docsContent.getInfo().getPostmanId() != null
                         && !docsContent.getInfo().getPostmanId().isEmpty()) {
@@ -85,11 +81,7 @@ public class ApiTesterService {
 
         if (file.exists()) {
             try {
-                byte[] bytes = Files.readAllBytes(file.toPath());
-                String contentStr = new String(bytes, StandardCharsets.UTF_8);
-                if (contentStr.startsWith("\uFEFF")) {
-                    contentStr = contentStr.substring(1);
-                }
+                String contentStr = readUtf8String(file);
                 DocsContent docsContent = objectMapper.readValue(contentStr, DocsContent.class);
                 if (docsContent.getInfo() != null && docsContent.getInfo().getName() != null
                         && !docsContent.getInfo().getName().isEmpty()) {
@@ -147,11 +139,7 @@ public class ApiTesterService {
         }
         log.info("Reading collection at {}", file.getAbsolutePath());
 
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        String contentStr = new String(bytes, StandardCharsets.UTF_8);
-        if (contentStr.startsWith("\uFEFF")) {
-            contentStr = contentStr.substring(1);
-        }
+        String contentStr = readUtf8String(file);
         log.trace("Read content: {}", contentStr);
 
         DocsContent docsContent = objectMapper.readValue(contentStr, DocsContent.class);
@@ -409,5 +397,10 @@ public class ApiTesterService {
         } catch (Exception e) {
             return UUID.randomUUID().toString();
         }
+    }
+
+    private String readUtf8String(File file) throws IOException {
+        String str = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        return str.startsWith("\uFEFF") ? str.substring(1) : str;
     }
 }

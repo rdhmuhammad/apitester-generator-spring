@@ -97,12 +97,8 @@ public class StartupGeneratorListener {
     }
 
     private JsonNode readJsonFile(File file) throws IOException {
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        String str = new String(bytes, StandardCharsets.UTF_8);
-        if (str.startsWith("\uFEFF")) {
-            str = str.substring(1);
-        }
-        return objectMapper.readTree(str);
+        String str = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        return objectMapper.readTree(str.startsWith("\uFEFF") ? str.substring(1) : str);
     }
 
     private void writeJsonNodeToFile(JsonNode node, File file) throws IOException {

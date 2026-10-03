@@ -55,26 +55,6 @@ public class DocsContent {
 
         @Builder.Default
         private String schema = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json";
-
-        @JsonProperty("_postman_id")
-        public String getPostmanId() {
-            return postmanId;
-        }
-
-        @JsonProperty("_postman_id")
-        public void setPostmanId(String postmanId) {
-            this.postmanId = postmanId;
-        }
-
-        @JsonIgnore
-        public String get_postman_id() {
-            return postmanId;
-        }
-
-        @JsonIgnore
-        public void set_postman_id(String postmanId) {
-            this.postmanId = postmanId;
-        }
     }
 
     @Getter
@@ -133,25 +113,6 @@ public class DocsContent {
 
         private String body;
 
-        @JsonProperty("_postman_previewlanguage")
-        public String getPreviewLanguage() {
-            return previewLanguage;
-        }
-
-        @JsonProperty("_postman_previewlanguage")
-        public void setPreviewLanguage(String previewLanguage) {
-            this.previewLanguage = previewLanguage;
-        }
-
-        @JsonIgnore
-        public String get_postman_previewlanguage() {
-            return previewLanguage;
-        }
-
-        @JsonIgnore
-        public void set_postman_previewlanguage(String previewLanguage) {
-            this.previewLanguage = previewLanguage;
-        }
     }
 
     @Getter
@@ -171,16 +132,6 @@ public class DocsContent {
 
         @JsonProperty("httpOnly")
         private Boolean httpOnly;
-
-        @JsonProperty("httpOnly")
-        public Boolean getHttpOnly() {
-            return httpOnly;
-        }
-
-        @JsonProperty("httpOnly")
-        public void setHttpOnly(Boolean httpOnly) {
-            this.httpOnly = httpOnly;
-        }
     }
 
     @Getter
@@ -384,29 +335,4 @@ public class DocsContent {
         private Boolean disabled;
     }
 
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CreateCollectionRequest {
-
-        private String name;
-        private String path;
-    }
-
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class UpdateCollectionRequest {
-
-        private String name;
-        private String path;
-    }
 }

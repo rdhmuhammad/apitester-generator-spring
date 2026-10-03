@@ -1,6 +1,5 @@
 package com.apitester.generator.processor;
 
-import com.apitester.generator.common.ValueUtils;
 import com.apitester.generator.model.PostmanMapItem;
 import com.apitester.generator.model.PostmanRequest;
 import com.apitester.generator.model.PostmanUrl;
@@ -219,31 +218,16 @@ public class EndpointProcessor {
         }
 
         return EndpointInfo.builder()
-                .name(ValueUtils.CemalToWords(method.getName()))
+                .name(camelToWords(method.getName()))
                 .request(request)
                 .methodName(method.getName())
                 .controllerClassName(controllerName)
                 .build();
     }
 
-    private String buildEndpointName(String methodPath, String httpMethod) {
-        if (methodPath == null || methodPath.isEmpty() || methodPath.equals("/")) {
-            return httpMethod + " Root";
-        }
-        String name = methodPath.replaceAll("^/|/$", "");
-        name = name.replace('/', ' ').replace('-', ' ').replace('_', ' ');
-        String[] words = name.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                if (sb.length() > 0) sb.append(' ');
-                sb.append(Character.toUpperCase(word.charAt(0)));
-                if (word.length() > 1) {
-                    sb.append(word.substring(1));
-                }
-            }
-        }
-        return sb.toString();
+    private String camelToWords(String val) {
+        String spaced = val.replaceAll("(?<!^)(?=[A-Z])", " ");
+        return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1);
     }
 
     String buildFullPath(String classLevelPath, String methodPath) {
@@ -348,13 +332,14 @@ public class EndpointProcessor {
 
     private String extractHttpMethodFromAnnotation(Annotation ann) {
         String className = ann.annotationType().getSimpleName();
-        Map<String, String> mapping = new HashMap<>();
-        mapping.put("GetMapping", "GET");
-        mapping.put("PostMapping", "POST");
-        mapping.put("PutMapping", "PUT");
-        mapping.put("DeleteMapping", "DELETE");
-        mapping.put("PatchMapping", "PATCH");
-        return mapping.get(className);
+        switch (className) {
+            case "GetMapping": return "GET";
+            case "PostMapping": return "POST";
+            case "PutMapping": return "PUT";
+            case "DeleteMapping": return "DELETE";
+            case "PatchMapping": return "PATCH";
+            default: return null;
+        }
     }
 
     private String[] extractPathFromAnnotation(Annotation ann) {

@@ -3,10 +3,10 @@ package com.apitester.generator.scanner;
 import com.apitester.generator.annotation.ApiTester;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 @Slf4j
 public class ControllerScanner {
@@ -17,11 +17,7 @@ public class ControllerScanner {
         Map<String, Object> controllerBeans = applicationContext.getBeansWithAnnotation(RestController.class);
 
         for (Map.Entry<String, Object> entry : controllerBeans.entrySet()) {
-            Class<?> controllerClass = entry.getValue().getClass();
-
-            if (isProxyClass(controllerClass)) {
-                controllerClass = controllerClass.getSuperclass();
-            }
+            Class<?> controllerClass = ClassUtils.getUserClass(entry.getValue());
 
             ApiTester apiTester = controllerClass.getAnnotation(ApiTester.class);
             if (apiTester == null) continue;
@@ -30,8 +26,9 @@ public class ControllerScanner {
             String[] folders = apiTester.folders();
             Class<?>[] ignoreParams = apiTester.ignoreParams();
             Map<String, String> globalHeadersMap = new HashMap<>();
-            Optional<ApiTester.Headers[]> globalHeaders = Optional.ofNullable(apiTester.globalHeaders());
-            globalHeaders.ifPresent(headers -> Stream.of(headers).forEach(h -> globalHeadersMap.put(h.key(), h.value())));
+            for (ApiTester.Headers h : apiTester.globalHeaders()) {
+                globalHeadersMap.put(h.key(), h.value());
+            }
 
             controllers.add(new ControllerInfo(
                     controllerClass, controllerName,
@@ -49,10 +46,6 @@ public class ControllerScanner {
             return substring.replaceAll("(?<!^)(?=[A-Z])", " ");
         }
         return simpleName;
-    }
-
-    private boolean isProxyClass(Class<?> clazz) {
-        return clazz.getSimpleName().contains("$$");
     }
 
     @lombok.Getter
