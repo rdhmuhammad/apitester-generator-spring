@@ -2,7 +2,7 @@
 
 **Summary**: Grouped table of contents and page registry for the LLM Wiki.
 **Sources**: `document/raw/concept/Preserve user changes.md`, `document/raw/concept/Three Arrow Merging Slide.md`, `document/raw/decision/endpoint_spec.md`
-**Last updated**: 2026-10-02.
+**Last updated**: 2026-10-12.
 
 ---
 

@@ -2,7 +2,39 @@
 
 **Summary**: Append-only record of all wiki operations, document ingestions, and structural changes.
 **Sources**: `document/raw/concept/Preserve user changes.md`, `document/raw/concept/Three Arrow Merging Slide.md`, `document/raw/decision/endpoint_spec.md`
-**Last updated**: 2026-10-02.
+**Last updated**: 2026-10-12.
+
+## 2026-10-12 - Documentation: Synchronize README.md with Embedded Web UI and Three-Way Merge
+
+**Context**:
+- Project purpose and technology drifted from a standalone startup Postman exporter to a full-featured in-app API testing toolkit with an embedded React Web UI and non-destructive three-way merge engine.
+- External frontend web UI repository was created and needed explicit linking in the documentation.
+
+**Changes Made**:
+- Updated `README.md` to document the embedded interactive Web UI hosted at `/apitester`, default credentials (`admin`/`secret`), and link to frontend source code at `https://github.com/rdhmuhammad/apitester`.
+- Documented non-destructive Three-Way Collection Merge powered by RFC 6902 JSON patch (`zjsonpatch`) and deterministic UUIDs preserving user edits across restarts.
+- Corrected JitPack dependency coordinates and clone URL from `anomalyco` to `rdhmuhammad`.
+- Corrected runtime prerequisites to Java 11+ (aligned with `sourceCompatibility = '11'`).
+- Synchronized configuration properties table with `ApiTesterProperties`: added `ui-path`, `auth.username`, `auth.password`, `collection.generate`, `collection.preserve-user-changes`, `collection.cache-path`, and purged dead properties (`base-package`, `format`, `timeout`).
+- Updated usage cases and example project instructions to describe decoupled generation and Web UI verification.
+
+## 2026-10-03 - Refactor: Codebase Simplification and Dead Code Elimination (Ponytail Audit)
+
+**Context**:
+- Executed whole-repo audit to eliminate unused dependencies, dead code, speculative abstractions, redundant boilerplate, and orphaned collection files.
+
+**Changes Made**:
+- Removed unused and duplicate dependencies: `com.github.loki4j:loki-logback-appender`, `org.modelmapper:modelmapper` (duplicated in root and example `build.gradle`), `org.json:json`, and redundant `spring-boot-starter` / explicit `jackson-databind`.
+- Deleted orphaned root and duplicate files: `ASLI LOYAL.postman_collection-2026.json`, `example/postman_collection.json`, `build.gradle.example`, `tests/http-client.private.env.json`.
+- Deleted duplicate unreferenced test controllers in root test package (`TestAdminController.java`, `TestMemberController.java`).
+- Inlined single-caller utility `ValueUtils.java` into `EndpointProcessor` and removed `ValueUtils.java`.
+- Removed dead uncalled `buildEndpointName` method and replaced HashMap allocation per annotation in `EndpointProcessor` with a concise switch.
+- Simplified `DtoAnalyzer` naming strategy conversion by eliminating duplicate regex pattern and extracting switch.
+- Streamlined `DocsContent`: deleted unreferenced `CreateCollectionRequest` and `UpdateCollectionRequest`, eliminated manual getter/setter boilerplate on `@Getter`/`@Setter` annotated records.
+- Cleaned dead unread configuration properties in `ApiTesterProperties` (`basePackage`, `parentFolder`, `format`, `includeHeaders`, `timeout`, `generateEnvFile`, `jwtSecret`).
+- De-duplicated `PathResourceResolver` anonymous registration in `ApiTesterAutoConfiguration` and simplified proxy class unwrapping using Spring's `ClassUtils.getUserClass`.
+- Consolidated UTF-8 BOM-stripping file reading logic into reusable `Files.readString` helper methods across `ApiTesterService` and `StartupGeneratorListener`.
+- Replaced `Optional` and `Stream` ceremony on non-null annotation arrays in `ControllerScanner` with direct `for` loop.
 
 ## 2026-10-02 - Feature: Preserve User Changes via Three-Way Collection Merge
 

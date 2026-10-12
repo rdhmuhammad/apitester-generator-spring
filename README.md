@@ -1,14 +1,17 @@
-# API Tester Generator for Spring Boot
+# API Tester for Spring Boot
 
-Automatically generate a [Postman Collection](https://www.postman.com/collection/) from your Spring Boot REST controllers at application startup — no manual export needed.
+A zero-overhead API testing toolkit and interactive documentation suite for Spring Boot. Automatically generates [Postman Collections](https://www.postman.com/collection/) from Spring Boot REST controllers at startup, provides an **embedded interactive Web UI**, and features a non-destructive **Three-Way Merge** to preserve developer customizations across code updates.
 
-> **Group:** `com.apitester`  &nbsp;|&nbsp; **Artifact:** `apitester-generator-spring`  &nbsp;|&nbsp; **Version:** `0.0.1`
+> **Frontend Web UI Source Code:** [https://github.com/rdhmuhammad/apitester](https://github.com/rdhmuhammad/apitester)  
+> **Group:** `com.apitester` &nbsp;|&nbsp; **Artifact:** `apitester-generator-spring` &nbsp;|&nbsp; **Version:** `0.0.1`
 
 ---
 
 ## Table of Contents
 
 - [Features](#features)
+- [Embedded Web UI](#embedded-web-ui)
+- [Preserving User Changes (Three-Way Merge)](#preserving-user-changes-three-way-merge)
 - [Installation](#installation)
   - [Local JAR](#local-jar)
   - [JitPack (recommended)](#jitpack-recommended)
@@ -42,18 +45,73 @@ Automatically generate a [Postman Collection](https://www.postman.com/collection
 
 ## Features
 
-- **Zero runtime annotation scanning** — collection is generated once at application startup via `ApplicationReadyEvent`.
-- Supports `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`, `@PatchMapping`, and `@RequestMapping`.
-- **Request body** → JSON example auto-generated from DTO fields.
-- **Query parameters** → `@RequestParam`, unannotated simple types, and DTO resolution.
-- **Path variables** → `@PathVariable` with `{param}` → `:param` conversion.
-- **Multipart file upload** → `@RequestPart` and `MultipartFile` produce `formdata` body.
-- **Form data** → `@ModelAttribute` resolved as `formdata` entries.
-- **Custom naming** — `@JsonProperty`, `@JsonNaming` (SnakeCase / KebabCase / LowerCase / UpperCamelCase), and custom setter detection.
-- **Hierarchical folders** — nest controllers under multi-level parent folders.
-- **Global headers / variables** — per-controller headers and collection-wide variables.
-- **Parameter ignore list** — skip framework types + custom ignore types.
-- Configurable via `application.properties`.
+- **Embedded Interactive Web UI** — Built-in Postman-like web dashboard hosted directly inside your Spring Boot application at `/apitester` for testing endpoints, viewing collections, and managing environments.
+- **Frontend Source Code** — Web UI frontend is maintained separately as an open-source project at [rdhmuhammad/apitester](https://github.com/rdhmuhammad/apitester).
+- **Non-Destructive Three-Way Merge** — Preserves manual customizations (test scripts, custom body values, headers, environment variables) across restarts when Spring controller code evolves.
+- **Zero Runtime Annotation Scanning Overhead** — Collection generation runs once during `ApplicationReadyEvent`.
+- **Decoupled File Generation** — Disable startup file export (`apitester.collection.generate=false`) while keeping the embedded Web UI active.
+- **Comprehensive Controller Support** — Supports `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`, `@PatchMapping`, and `@RequestMapping`.
+- **Request Body Introspection** — JSON payload examples auto-generated from DTO fields.
+- **Query Parameters** — `@RequestParam`, unannotated simple types, and complex DTO parameter resolution.
+- **Path Variables** — `@PathVariable` with automatic `{param}` → `:param` conversion for Postman.
+- **Multipart & Form Data** — `@RequestPart`, `MultipartFile`, and `@ModelAttribute` resolved as `formdata` entries.
+- **Custom Naming Strategies** — Honors `@JsonProperty`, Jackson `@JsonNaming` (`SnakeCase`, `KebabCase`, `LowerCase`, `UpperCamelCase`), and non-standard setter naming.
+- **Hierarchical Folders** — Multi-level nested folder organization via `@ApiTester(folders = {...})`.
+- **Global Headers & Variables** — Controller-level headers and collection-wide global variables.
+- **Parameter Ignore List** — Automatically ignores framework types (`HttpServletRequest`, `Principal`, `BindingResult`, etc.) with support for custom types.
+- **Built-in Web Authentication** — Secure cookie-based JWT sessions with customizable credentials.
+
+---
+
+## Embedded Web UI
+
+The starter embeds a single-page application directly within the JAR, accessible at:
+
+```
+http://localhost:8080/apitester
+```
+
+*(or whichever port your application uses)*
+
+- **Default Username:** `admin`
+- **Default Password:** `secret`
+- **Frontend Repository:** [https://github.com/rdhmuhammad/apitester](https://github.com/rdhmuhammad/apitester)
+
+You can customize credentials and UI route via `application.properties`:
+
+```properties
+apitester.ui-path=/apitester
+apitester.auth.username=admin
+apitester.auth.password=mySecretPassword
+```
+
+### Spring Security Integration
+
+If your application uses Spring Security, permit access to the Web UI assets and environment endpoint:
+
+```java
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.authorizeRequests()
+        .antMatchers("/apitester/**", "/.env").permitAll()
+        .anyRequest().authenticated();
+    return http.build();
+}
+```
+
+---
+
+## Preserving User Changes (Three-Way Merge)
+
+When developing APIs, you often customize endpoints in Postman or the Web UI — adding pre-request scripts, test assertions, custom sample bodies, or specific authentication headers.
+
+By default (`apitester.collection.preserve-user-changes=true`), ApiTester maintains a shadow snapshot in `.apitester-cache.json`. When your controllers change and the application restarts:
+
+1. **Base (Cache):** The state from the previous generation run.
+2. **Target (User File):** Your actual collection file containing any manual edits made in Postman or the UI.
+3. **Update (Code):** Newly introspected controller definitions.
+
+A deterministic **Three-Way Merge** reconciles these states: new endpoints and changed paths/methods from your Java code are added, while your custom test scripts, headers, sample values, and environments are safely preserved.
 
 ---
 
@@ -102,7 +160,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.anomalyco:apitester-generator-spring:0.0.1'
+    implementation 'com.github.rdhmuhammad:apitester-generator-spring:0.0.1'
 }
 ```
 
@@ -148,7 +206,9 @@ public class UserController {
 }
 ```
 
-**4.** Start your application. The collection is written to `postman_collection.json` by default.
+**4.** Start your application:
+- The Postman collection is generated/merged at `postman_collection.json`.
+- Open the embedded Web UI in your browser at `http://localhost:8080/apitester` (login: `admin` / `secret`).
 
 ---
 
@@ -158,28 +218,36 @@ All properties go under the `apitester.*` prefix in `application.properties`:
 
 | Property | Default | Description |
 |---|---|---|
-| `apitester.enabled` | `true` | Master switch. Set to `false` to disable generation. |
+| `apitester.enabled` | `true` | Master switch. Set to `false` to disable the starter completely. |
+| `apitester.ui-path` | `/apitester` | URL path where the embedded Web UI is hosted. |
+| `apitester.auth.username` | `admin` | Username for Web UI authentication. |
+| `apitester.auth.password` | `secret` | Password for Web UI authentication. |
+| `apitester.collection.generate` | `true` | Set to `false` to disable writing the collection file on startup while keeping the Web UI active. |
 | `apitester.collection.name` | `API Collection` | Postman collection display name. |
 | `apitester.collection.description` | (empty) | Collection description. |
 | `apitester.collection.base-url` | `http://localhost:8080` | Used as the `{{baseUrl}}` collection variable. |
 | `apitester.collection.output-path` | `postman_collection.json` | Output file path (relative to working directory). |
-| `apitester.base-package` | (empty) | Reserved for future use. |
-| `apitester.format` | `json` | Output format (currently only `json`). |
-| `apitester.timeout` | `5000` | Reserved for future use. |
+| `apitester.collection.preserve-user-changes` | `true` | Enables non-destructive 3-way merge to preserve manual edits in the collection. |
+| `apitester.collection.cache-path` | `.apitester-cache.json` | Shadow snapshot path used for 3-way merging. |
 
 **Example:**
 
 ```properties
 apitester.enabled=true
+apitester.ui-path=/apitester
+apitester.auth.username=admin
+apitester.auth.password=admin123
+
+apitester.collection.generate=true
 apitester.collection.name=My API
 apitester.collection.description=Auto-generated from Spring controllers
 apitester.collection.base-url=https://api.example.com
 apitester.collection.output-path=docs/postman.json
+apitester.collection.preserve-user-changes=true
 
 # Toggle SLF4J logging level for this package (e.g. trace, error, info)
 logging.level.com.apitester.generator=info
 ```
-
 
 ---
 
@@ -465,6 +533,14 @@ public class MyController { ... }
 
 ### 16. Disabling Generation
 
+To disable automatic collection file generation at startup while still running the embedded Web UI:
+
+```properties
+apitester.collection.generate=false
+```
+
+To disable ApiTester entirely:
+
 ```properties
 apitester.enabled=false
 ```
@@ -477,6 +553,9 @@ Or simply remove `@EnableApiTester` from your main class.
 
 A complete demo application is included in the [`example/`](example/) directory. It demonstrates:
 
+- Embedded Web UI at `http://localhost:8087/apitester` (login: `admin` / `admin123`)
+- Spring Security integration permitting Web UI routes
+- Non-destructive three-way merge preserving collection edits
 - JWT authentication with `AuthController`
 - CRUD controllers (`ProductManagementController`, `MerchantManagementController`) nested under a `Management` parent folder
 - Controllers merging under shared parent folders
@@ -490,16 +569,16 @@ cd example
 ../gradlew bootRun
 ```
 
-The generated Postman collection is written to `example/document/postman_collection.json`.
+The generated Postman collection is written to `example/document/postman_collection.json`, and the Web UI is accessible at `http://localhost:8087/apitester`.
 
 ---
 
 ## Building from Source
 
-**Prerequisites:** Java 17+
+**Prerequisites:** Java 11+
 
 ```bash
-git clone https://github.com/anomalyco/apitester-generator-spring.git
+git clone https://github.com/rdhmuhammad/apitester-generator-spring.git
 cd apitester-generator-spring
 
 # Build the library
