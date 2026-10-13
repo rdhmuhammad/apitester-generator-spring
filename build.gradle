@@ -1,14 +1,17 @@
 plugins {
     id 'java'
+    id 'maven-publish'
     id 'org.springframework.boot' version '2.7.17'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
-group = 'com.apitester'
+group = 'com.github.rdhmuhammad'
 version = '0.0.1'
 
 java {
-    sourceCompatibility = '11 '
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    withSourcesJar()
 }
 
 configurations {
@@ -23,12 +26,11 @@ repositories {
 
 jar {
     enabled = true
-    archiveClassifier = 'plain'
+    archiveClassifier = ''
 }
 
 bootJar {
-    archiveClassifier = 'boot'
-    launchScript()
+    enabled = false
 }
 
 dependencies {
@@ -43,4 +45,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
